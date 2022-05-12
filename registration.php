@@ -20,26 +20,33 @@
                   <h2>Registration</h2>
                 </div>
                 <h6 class="font-weight-light">Enter fill up the form below to a reister a new account.</h6>
-                <form class="pt-3" id="registration" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                <form class="pt-3" id="form" method="POST" action="">
                   <div class="form-group">
-                    <input type="text" class="form-control form-control-lg" id="exampleInputEmail1" placeholder="First Name" name="fname">
+                    <input type="text" class="form-control form-control-lg" placeholder="First Name" name="fname">
                   </div>
                   <div class="form-group">
-                    <input type="text" class="form-control form-control-lg" id="exampleInputEmail1" placeholder="Last Name" name="lname">
+                    <input type="text" class="form-control form-control-lg" placeholder="Last Name" name="lname">
                   </div>
                   <div class="form-group">
-                    <input type="text" class="form-control form-control-lg" id="exampleInputEmail1" placeholder="Username" name="username">
+                    <input type="text" class="form-control form-control-lg" placeholder="Username" name="username">
                   </div>
                   <div class="form-group">
-                    <input type="password" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Password" name="password">
+                    <input type="password" class="form-control form-control-lg" placeholder="Password" name="password">
                   </div>
                   <div class="form-group">
-                    <input type="email" class="form-control form-control-lg" id="exampleInputEmail1" placeholder="Email Address" name="email">
+                    <input type="email" class="form-control form-control-lg" placeholder="Email Address" name="email">
+                  </div>
+                  <div class="form-group">
+                    <select name="registration_type" class="form-control">
+                        <option value="">--Select Registration Type--</option>
+                        <option value="1">As Student</option>
+                        <option value="2">As Teacher</option>
+                    </select>
                   </div>
                   <div class="form-group"><div class="result"></div></div>
                   <div class="mt-3">
                     <input type="hidden" name="form" value="registration">
-                    <input type="submit" value="Registration" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn">
+                    <input type="submit" value="Registration" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                   </div>
                   <div class="form-group mt-3">
                     <p>Already have an account? Please click <a href="login.php" class="text-primary">here</a> to login.</p>
