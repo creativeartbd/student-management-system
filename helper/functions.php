@@ -56,6 +56,46 @@ function insert ( $data, $table_name ) {
     return false;
 }
 
+function select( $table_name, array $columns, $where = null, $limit = 1 ) {
+    
+    global $mysqli;
+    $columns = implode(', ', $columns );
+    $sql = "SELECT $columns FROM $table_name";
+
+    if( $where ) {
+        $sql .= " WHERE $where ";
+    }
+    $sql .= " LIMIT $limit";
+    $query = mysqli_query( $mysqli, $sql );
+
+    if( mysqli_num_rows( $query ) > 0 ) {
+        $result = mysqli_fetch_array($query, MYSQLI_ASSOC);
+        return $result;
+    }
+    return;
+    
+} 
+
+function update ( $table_name, array $columns_values, $where_cols ) {
+    global $mysqli;
+
+    $cols_values = [];
+    foreach( $columns_values as $key => $col_value ) {
+        $cols_values[] = " $key = '$col_value' ";
+    }
+    $cols_values = implode(', ', $cols_values );
+
+    $where_col_array = [];
+    foreach( $where_cols as $key => $where_col ) {
+        $where_col_array[] = " $key = '$where_col' ";
+    }
+    $where_col_array = implode( ' AND ', $where_col_array );
+
+    $sql = "UPDATE $table_name SET $cols_values WHERE $where_col_array ";
+    $query = mysqli_query( $mysqli, $sql );
+    return $query;
+}
+
 function check_user_login_status() {
     if( ! isset( $_SESSION['username'] ) && ! isset( $_SESSION['login_type'] ) ) {
         header("location:login.php");

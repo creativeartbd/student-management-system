@@ -1,6 +1,90 @@
 <?php
 require_once 'functions.php';
 
+// Process profile update form 
+if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
+    
+    $fname = htmlspecialchars( $_POST['fname'] );
+    $lname = htmlspecialchars( $_POST['lname'] );
+    $password = htmlspecialchars( $_POST['password'] );
+    $hash_password = hash( 'sha512', $password );
+    $email = htmlspecialchars( $_POST['email'] );
+
+    $username = $_SESSION['username'];
+    $st_type = $_SESSION['login_type'];
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+
+    // Check existing user
+    $found_email = '';
+    if( !empty( $email ) ) {
+        $email_sql = "SELECT email FROM sms_registration WHERE email = '$email' AND username != '$username' AND st_type != '$st_type'  ";
+        $email_query = mysqli_query( $mysqli, $email_sql );
+        $found_email = mysqli_num_rows( $email_query );
+    }
+
+    if( isset( $fname) && isset( $lname ) && isset( $password ) && isset( $email ) ) {
+        if( empty( $fname ) && empty( $lname ) && empty( $username ) && empty( $email ) ) {
+            $output['message'][] = 'All fields is required';
+        } else {
+            // validate first name
+            if( empty( $fname ) ) {
+                $output['message'][] = 'First name is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $fname) ) {
+                $output['message'][] = 'First name should contain only characters.';
+            } elseif( strlen( $fname ) > 20 || strlen( $fname ) < 2 ) {
+                $output['message'][] = 'First name length should be between 2-20 characters long.';
+            }
+            // validate last name
+            if( empty( $lname ) ) {
+                $output['message'][] = 'Last name is required';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $lname) ) {
+                $output['message'][] = 'Last name should contain only characters.';
+            } elseif( strlen( $lname ) > 20 || strlen( $lname ) < 2 ) {
+                $output['message'][] = 'Last name length should be between 2-20 characters long.';
+            }
+            // validate password
+            if( !empty( $password ) ) {
+                if( empty( $password ) ) {
+                    $output['message'][] = 'Password is required.';
+                } elseif( strlen( $password ) < 6 ) {
+                    $output['message'][] = 'Password length should be at least 6 characters long.';
+                }
+            }
+            // validate email
+            if( empty( $email ) ) {
+                $output['message'][] = 'Email address is required.';
+            } elseif( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+                $output['message'][] = 'Email address is not correct.';
+            } elseif( $found_email == 1 ) {
+                $output['message'][] = 'Email address is already exist, Please choose another.';
+            }
+        }
+
+        if( empty( $output['message'] ) ) {
+            $update = update('sms_registration', [
+                'fname' =>  $fname, 
+                'lname' => $lname, 
+                'email' => $email,
+            ], [ 
+                'username' => $username, 
+                'st_type' => $st_type 
+            ] );
+            if( $update ) {
+                $output['success'] = true;
+                $output['message'] = "Successfully updated.";
+            } else {
+                $output['success'] = false;
+                $output['message'] = "Opps, Somethng wen't wrong, Please contact administrative.";
+            }
+        }
+
+        echo json_encode($output);
+    }
+}
+
 // Process login form 
 if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
     // get all form field value
@@ -92,12 +176,12 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
     // check existence
     if( isset( $fname) && isset( $lname ) && isset( $username) && isset( $password ) && isset( $email ) && isset( $registration_type ) ) {
         if( empty( $fname ) && empty( $lname ) && empty( $username ) && empty( $password ) && empty( $email ) && empty( $registration_type ) ) {
-            $output[] = 'All fields is required';
+            $output['message'][] = 'All fields is required';
         } else {
             // validate first name
             if( empty( $fname ) ) {
                 $output['message'][] = 'First name is required.';
-            } elseif( !preg_match('/^[a-zA-Z\d]+$/', $fname) ) {
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $fname) ) {
                 $output['message'][] = 'First name should contain only characters.';
             } elseif( strlen( $fname ) > 20 || strlen( $fname ) < 2 ) {
                 $output['message'][] = 'First name length should be between 2-20 characters long.';
@@ -105,7 +189,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
             // validate last name
             if( empty( $lname ) ) {
                 $output['message'][] = 'Last name is required';
-            } elseif( !preg_match('/^[a-zA-Z\d]+$/', $lname) ) {
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $lname) ) {
                 $output['message'][] = 'Last name should contain only characters.';
             } elseif( strlen( $lname ) > 20 || strlen( $lname ) < 2 ) {
                 $output['message'][] = 'Last name length should be between 2-20 characters long.';

@@ -47,12 +47,12 @@
       </a>
     </li>
     <?php endif; ?>
-    <!-- <li class="nav-item">
-      <a class="nav-link" href="contact.php">
-        <span class="menu-title">Contact</span>
-        <i class="mdi mdi-email-open menu-icon"></i>
+    <li class="nav-item">
+      <a class="nav-link" href="profile.php">
+        <span class="menu-title">Profile</span>
+        <i class="mdi mdi-face-profile menu-icon"></i>
       </a>
-    </li> -->
+    </li>
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) ) : ?>
     <li class="nav-item">
       <a class="nav-link" href="signout.php">
