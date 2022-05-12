@@ -1,5 +1,5 @@
 <!-- partial:partials/_footer.html -->
-<footer class="footer">
+          <footer class="footer">
             <div class="container-fluid d-flex justify-content-between">
               <span class="text-muted d-block text-center text-sm-start d-sm-inline-block">Copyright © bootstrapdash.com 2021</span>
             </div>
@@ -10,6 +10,7 @@
       </div>
       <!-- page-body-wrapper ends -->
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="<?php echo ROOT; ?>assets/vendors/js/vendor.bundle.base.js"></script>
     <script src="<?php echo ROOT; ?>assets/vendors/chart.js/Chart.min.js"></script>
     <script src="<?php echo ROOT; ?>assets/js/jquery.cookie.js" type="text/javascript"></script>
@@ -18,5 +19,6 @@
     <script src="<?php echo ROOT; ?>assets/js/misc.js"></script>
     <script src="<?php echo ROOT; ?>assets/js/dashboard.js"></script>
     <script src="<?php echo ROOT; ?>assets/js/todolist.js"></script>
+    <script src="<?php echo ROOT; ?>assets/js/main.js"></script>
   </body>
 </html>

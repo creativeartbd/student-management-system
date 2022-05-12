@@ -1,4 +1,4 @@
-<?php require_once 'functions.php'; ?>
+<?php require_once 'helper/functions.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
   <head>

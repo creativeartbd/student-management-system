@@ -26,7 +26,12 @@
                         }
                     } else {
                         $(".result").append("<div class='alert alert-success'>"+data.message+"</div>");
-                        document.getElementById("registration").reset();
+                        document.getElementById("form").reset();
+                        if( data.redirect ) {
+                            setTimeout(function() {
+                                window.location = data.redirect;
+                            }, 3000);
+                        }
                     }
                 }
             });

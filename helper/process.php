@@ -10,62 +10,51 @@ if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
     $hash_password = hash( 'sha512', $password );
     $status = '';
 
-    // Hold all erros
-    $errors = [];
-    $errors['success'] = false;
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+    $output['redirect'] = 'index.php';
 
     // Check username and password
-    $check_user = "SELECT username,status FROM sms_registration WHERE username = '$username' AND password = '$hash_password' ";
+    $check_user = "SELECT username, status FROM sms_registration WHERE username = '$username' AND password = '$hash_password' AND st_type = '$login_type' ";
     $user_query = mysqli_query( $mysqli, $check_user );
     $found_user = mysqli_num_rows( $user_query );
+
     if( $found_user ) {
         $result = mysqli_fetch_array( $user_query );
         $status = $result['status'];
     }
     
-
     if( isset( $username) && isset( $password ) ) {
         if( empty( $username ) && empty( $password ) ) {
-            $errors[] = 'All fields is required';
+            $output['message'][] = 'All fields is required';
         } else {
             // validate username
             if( empty( $username ) ) {
-                $errors[] = 'Username is required';
+                $output['message'][] = 'Username is required';
             } elseif( empty( $password ) ) {
-                $errors[] = 'Password is required';
+                $output['message'][] = 'Password is required';
             } elseif( $found_user == 0 ) {
-                $errors[] = 'Username or password is incorrect';
+                $output['message'][] = 'Username or password is incorrect';
             } elseif( $status == 1 ) {
-                $errors[] = 'Your account is not active, Please contact administrative';
+                $output['message'][] = 'Your account is not active, Please contact administrative';
             } elseif( !in_array( $login_type, [1,2] ) ) {
-                $errors[] = 'Invalid login type given';
+                $output['message'][] = 'Invalid login type given';
             }
         }
 
-        if( $errors['success'] ) {
+        if( empty( $output['message'] ) ) {
             if( $found_user == 1 ) {
-                echo "<div class='alert alert-success success'>Successfully Logged, Now you are redirecting....</div>";
+                $output['success'] = true;
+                $output['message'][] = "Successfully Logged, Now you are redirecting....";
                 $_SESSION['username'] = $username;
                 $_SESSION['login_type'] = $login_type; 
             } else {
-                echo "<div class='alert alert-warning warning'>Opps! Something wen't wrong! Please contact administrator.</div>";
+                $output['success'] = false;
+                $output['message'][] = "Opps! Something wen't wrong! Please contact administrator";
             }
         }
-
-        // echo '<pre>';
-        //      print_r(  $errors );
-        // echo '</pre>';
-        // Check if error found
-        if( !empty( $errors ) ) {
-            echo "<div class='alert alert-danger danger'>";
-                foreach( $errors as $error ) {
-                    $output[] = $error . '<br/>';
-                }
-            echo "</div>";
-        } else {
-            
-        }
-        echo json_encode($errors);
+        echo json_encode($output);
     }
 }
 
