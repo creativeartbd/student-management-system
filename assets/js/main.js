@@ -1,6 +1,10 @@
 (function ($) {
     "use strict";
     $(document).ready(function () {
+        $(".approve_project").click(function(){
+           var username = $(this).data('username');
+           $(".set_username").val( username );
+        });
         $(document).on("submit", "#form", function (e) {
             e.preventDefault();
             var form = $(this);

@@ -1,6 +1,43 @@
 <?php
 require_once 'functions.php';
 
+
+// Process profile update form 
+if( isset( $_POST['form']) && $_POST['form'] == 'approve_project' ) {
+    
+    $student_username = htmlspecialchars(trim($_POST['student_username']));
+    $session_username = $_SESSION['username'];
+    $check_username_sql = "SELECT username FROM sms_registration WHERE username = '$student_username' ";
+    $check_username_query = mysqli_query( $mysqli, $check_username_sql );
+    $found_username = mysqli_num_rows( $check_username_query );
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+
+    if( isset( $student_username ) ) {
+        if( empty( $student_username ) ) {
+            $output['message'][] = 'Student username is empty';
+        } elseif( $found_username == 0 ) {
+            $output['message'][] = 'Student username is not found';
+        }
+
+        if( empty( $output['message'] ) ) {
+            $approve_sql = "UPDATE sms_projects SET is_approved = 1, approved_by = '$session_username' WHERE username = '$student_username' ";
+            $approve_query = mysqli_query( $mysqli, $approve_sql);
+
+            if( $approve_query ) {
+                $output['success'] = true;
+                $output['message'] = "Successfully approved the student.";
+            } else {
+                $output['success'] = false;
+                $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+            }
+        }
+        echo json_encode($output);
+    }
+}
+
 // Process profile update form 
 if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
     
