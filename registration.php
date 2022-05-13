@@ -1,4 +1,7 @@
-<?php require_once 'partials/header.php' ?>
+<?php require_once 'partials/header.php';
+check_user_login_status();
+?>
+
     <div class="container-scroller">
       <?php require_once 'partials/top-header.php'?>
       <div class="container-fluid page-body-wrapper">

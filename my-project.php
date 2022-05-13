@@ -23,17 +23,27 @@ check_user_login_status();
                         $username = $_SESSION['username'];
                         $st_type = $_SESSION['login_type'];
 
-                        $result = select('projects', ['*'], "username='$username' "); 
-                        $project_title = $result['project_title'];
-                        $project_description = $result['project_description'];
-                        $project_file = $result['project_file'];
-                        $project_file = unserialize( $project_file );
-                        $uploaded_time = $result['uploaded_time'];
-                        $edited_count = $result['edited_count'];
-
+                        $result = select('sms_projects', ['*'], "username='$username' ");
+                        $project_title = $project_description = $project_file = $uploaded_time = $edited_count = '';
+                        if( $result ) {
+                          $project_title = $result['project_title'];
+                          $project_description = $result['project_description'];
+                          $project_file = $result['project_file'];
+                          $project_file = unserialize( $project_file );
+                          $uploaded_time = $result['uploaded_time'];
+                          $edited_count = $result['edited_count'];
+                          $time_left =  3 - $edited_count;
+                          if( $time_left == 1 ) {
+                            $time_level = ' time';
+                          } else {
+                            $time_level = ' times';
+                          }
+                        } else {
+                          echo "<div class='alert alert-warning'>Seems like you didn't upload your project. Please go to Submit Project page and then submit.</div>";
+                        }
                         ?>
                         <h4 class="card-title">Update your project.</h4>
-                        <p class="card-description">Please keep in mind that you can edit your uploaded project only 3 times max.</p>
+                        <p class="card-description text-danger">Please keep in mind that you can edit your uploaded project only 3 times max. Now you have <?php echo ( 3 - $edited_count ); echo $time_level; ?> left.</p>
                         <form class="pt-3" id="form" method="POST" action="" enctype="multipart/form-data">
                             <div class="form-group">
                                 <input type="text" value="<?php echo $project_title; ?>" class="form-control form-control-lg" placeholder="Project Title" name="ptitle">

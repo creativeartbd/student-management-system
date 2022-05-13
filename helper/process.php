@@ -29,7 +29,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
     $output['success'] = false;
 
     // Check existing user
-    $edited_count = "SELECT edited_count FROM projects WHERE username = '$username' ";
+    $edited_count = "SELECT edited_count FROM sms_projects WHERE username = '$username' ";
     $edited_query = mysqli_query( $mysqli, $edited_count );
     $result = mysqli_fetch_array( $edited_query );
     $found_count = (int) $result['edited_count'];
@@ -84,7 +84,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                     } 
                 }
     
-                $update = update( 'projects', $updating_data,  [ 
+                $update = update( 'sms_projects', $updating_data,  [ 
                     'username' => $username, 
                 ] );
     
@@ -96,7 +96,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                     $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
                 }
     
-                $sql_update = "UPDATE projects SET edited_count = edited_count + 1 WHERE username = '$username'";
+                $sql_update = "UPDATE sms_projects SET edited_count = edited_count + 1 WHERE username = '$username'";
                 $sql_query = mysqli_query($mysqli, $sql_update);
     
                 if( ! $sql_query ) {
@@ -132,7 +132,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
     $username = $_SESSION['username'];
 
     // Check existence
-    $check_existnece = "SELECT username, edited_count FROM projects WHERE username = '$username' ";
+    $check_existnece = "SELECT username, edited_count FROM sms_projects WHERE username = '$username' ";
     $check_query = mysqli_query( $mysqli, $check_existnece );
     $found_check = mysqli_num_rows( $check_query );
 
@@ -187,7 +187,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
                             'project_file' => serialize($new_file_name), 
                             'username' => $username, 
                             'edited_count' => 0,
-                        ], 'projects' ) ) {
+                        ], 'sms_projects' ) ) {
                             $output['success'] = true;
                             $output['message'] = "Successfully submited your project.";
                         } else {
@@ -357,6 +357,8 @@ if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
                 $output['message'][] = 'Username is required';
             } elseif( empty( $password ) ) {
                 $output['message'][] = 'Password is required';
+            } elseif( empty( $login_type ) )  {
+                $output['message'][] = 'Please choose a login typye';
             } elseif( $found_user == 0 ) {
                 $output['message'][] = 'Username or password is incorrect';
             } elseif( $status == 1 ) {

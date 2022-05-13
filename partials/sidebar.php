@@ -10,8 +10,12 @@
           $st_type = $_SESSION['login_type'];
           $result = select('sms_registration', ['profile_pic'], "username='$username' AND st_type = '$st_type'");
           $profile_pic = $result['profile_pic']; 
+          if($profile_pic) {
+            echo "<img src='assets/images/profile/$profile_pic' alt='profile'>";
+          } else {
+            echo '<i class="mdi mdi-face-profile mdi-48px menu-icon"></i>';
+          }
           ?>
-          <img src="assets/images/profile/<?php echo $profile_pic; ?>" alt="profile">
           <span class="login-status online"></span>
           <!--change to offline or busy as needed-->
         </div>
@@ -59,6 +63,7 @@
         <i class="mdi mdi-face-profile menu-icon"></i>
       </a>
     </li>
+    <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) && $_SESSION['login_type'] == 1 ) : ?>
     <li class="nav-item">
       <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
         <span class="menu-title">Project</span>
@@ -72,11 +77,20 @@
         </ul>
       </div>
     </li>
+    <?php endif; ?>
+    <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) && $_SESSION['login_type'] == 2 ) : ?>
+    <li class="nav-item">
+      <a class="nav-link" href="student-project.php">
+        <span class="menu-title">Student Project</span>
+        <i class="mdi mdi-projector menu-icon"></i>
+      </a>
+    </li>
+    <?php endif; ?>
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) ) : ?>
     <li class="nav-item">
       <a class="nav-link" href="signout.php">
         <span class="menu-title">Signout</span>
-        <i class="mdi mdi-chart-bar menu-icon"></i>
+        <i class="mdi mdi mdi-power menu-icon"></i>
       </a>
     </li>
     <?php endif; ?>
