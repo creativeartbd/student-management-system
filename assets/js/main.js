@@ -4,12 +4,14 @@
         $(document).on("submit", "#form", function (e) {
             e.preventDefault();
             var form = $(this);
-            var data = form.serialize();
+            var data = new FormData(this);
             $.ajax({
                 dataType: "json",
                 type: "POST",
                 url: 'helper/process.php',
                 data: data,
+                processData : false,
+                contentType : false,
                 beforeSend: function () {
                     $(".ajax-btn").val("Please wait...");
                     $(".ajax-btn").prop("disabled", true);

@@ -5,7 +5,13 @@
     <li class="nav-item nav-profile">
       <a href="#" class="nav-link">
         <div class="nav-profile-image">
-          <img src="assets/images/faces/face1.jpg" alt="profile">
+          <?php 
+          $username = $_SESSION['username'];
+          $st_type = $_SESSION['login_type'];
+          $result = select('sms_registration', ['profile_pic'], "username='$username' AND st_type = '$st_type'");
+          $profile_pic = $result['profile_pic']; 
+          ?>
+          <img src="assets/images/profile/<?php echo $profile_pic; ?>" alt="profile">
           <span class="login-status online"></span>
           <!--change to offline or busy as needed-->
         </div>
@@ -50,6 +56,12 @@
     <li class="nav-item">
       <a class="nav-link" href="profile.php">
         <span class="menu-title">Profile</span>
+        <i class="mdi mdi-face-profile menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="submit-project.php">
+        <span class="menu-title">Submit Project</span>
         <i class="mdi mdi-face-profile menu-icon"></i>
       </a>
     </li>

@@ -9,7 +9,22 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
     $password = htmlspecialchars( $_POST['password'] );
     $hash_password = hash( 'sha512', $password );
     $email = htmlspecialchars( $_POST['email'] );
+    $username = $_SESSION['username'];
 
+    $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
+    if( isset( $_FILES['profile_pic']['name'] ) ) {
+        $file_name = htmlspecialchars( $_FILES['profile_pic']['name'] );
+        $file_tmp_name = htmlspecialchars( $_FILES['profile_pic']['tmp_name'] );
+        $file_size = htmlspecialchars( $_FILES['profile_pic']['size'] );
+        $file_type = htmlspecialchars( $_FILES['profile_pic']['type'] );
+
+        $allowed_extension = [ 'jpg', 'jpeg', 'png', 'gif' ];
+        $explode = explode( '.', $file_name );
+        $extension = end( $explode );
+    }
+    $allowed_file_size = 5000000; // 5 MB file size allowed
+    $new_file_name = time().'.'.$extension;
+    
     $username = $_SESSION['username'];
     $st_type = $_SESSION['login_type'];
 
@@ -61,23 +76,42 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
             } elseif( $found_email == 1 ) {
                 $output['message'][] = 'Email address is already exist, Please choose another.';
             }
+
+            // Validate file upload
+            if( ! empty( $file_name ) ) {
+                if( ! in_array( $extension, $allowed_extension ) ) {
+                    $output['message'][] = 'Uploaded file type is not allowed. We are currently allowing ' . implode(', ', $allowed_extension )  .' filetype';
+                } elseif( $file_size > $allowed_file_size ) {
+                    $output['message'][] = 'Your uploaded file size must be less than 5 MB';
+                }
+            }
         }
 
         if( empty( $output['message'] ) ) {
-            $update = update('sms_registration', [
+            // Upload the file to the directory
+            $updating_data = [
                 'fname' =>  $fname, 
                 'lname' => $lname, 
                 'email' => $email,
-            ], [ 
+            ];
+
+            if( !empty( $file_name ) ) {
+                if( move_uploaded_file($file_tmp_name, '../assets/images/profile/'.$new_file_name) ) {
+                    $updating_data['profile_pic'] = $new_file_name;
+                }
+            }
+            
+            $update = update('sms_registration', $updating_data,  [ 
                 'username' => $username, 
                 'st_type' => $st_type 
             ] );
+
             if( $update ) {
                 $output['success'] = true;
-                $output['message'] = "Successfully updated.";
+                $output['message'][] = "Successfully updated.";
             } else {
                 $output['success'] = false;
-                $output['message'] = "Opps, Somethng wen't wrong, Please contact administrative.";
+                $output['message'][] = "Opps, Somethng wen't wrong, Please contact administrative.";
             }
         }
 

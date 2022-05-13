@@ -34,7 +34,7 @@ check_user_login_status();
 									
 									?>
 									<h4 class="card-title">Update your profile.</h4>
-									<form class="pt-3" id="form" method="POST" action="">
+									<form class="pt-3" id="form" method="POST" action="" enctype="multipart/form-data">
 											<div class="form-group">
 												<input type="text" value="<?php echo $fname; ?>" class="form-control form-control-lg" placeholder="First Name" name="fname">
 											</div>
