@@ -1,6 +1,106 @@
 <?php
 require_once 'functions.php';
 
+// Process registration form 
+if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
+    // get all form field value
+    $ptitle = htmlspecialchars( $_POST['ptitle'] );
+    $pdes = htmlspecialchars( $_POST['pdes'] );
+
+    $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
+    if( isset( $_FILES['pfile']['name'] ) ) {
+        $file_name = htmlspecialchars( $_FILES['pfile']['name'] );
+        $file_tmp_name = htmlspecialchars( $_FILES['pfile']['tmp_name'] );
+        $file_size = htmlspecialchars( $_FILES['pfile']['size'] );
+        $file_type = htmlspecialchars( $_FILES['pfile']['type'] );
+
+        $allowed_extension = [ 'pdf', 'doc', 'docx' ];
+        $explode = explode( '.', $file_name );
+        $extension = end( $explode );
+    }
+    $allowed_file_size = 5000000; // 5 MB file size allowed
+    $new_file_name = time().'.'.$extension;
+    $username = $_SESSION['username'];
+
+    // Check existence
+    $check_existnece = "SELECT username, edited_count FROM projects WHERE username = '$username' ";
+    $check_query = mysqli_query( $mysqli, $check_existnece );
+    $found_check = mysqli_num_rows( $check_query );
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+    
+    // check existence
+
+    if( $found_check > 0 ) {
+        $output['message'][] = 'You have already submited your project. Please update your existing submitted project if it\'s required.';
+    } else {
+        if( isset( $ptitle) && isset( $pdes ) && isset( $file_name) ) {
+        
+            if( empty( $ptitle ) && empty( $pdes ) && empty( $file_name ) ) {
+                $output['message'][] = 'All fields is required';
+            } else {
+                // validate project title
+                if( empty( $ptitle ) ) {
+                    $output['message'][] = 'Project title is required.';
+                } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $ptitle) ) {
+                    $output['message'][] = 'Project title should contain only alpha numeric characters.';
+                } elseif( strlen( $ptitle ) > 255 || strlen( $ptitle ) < 10 ) {
+                    $output['message'][] = 'Project title length should be between 10-255 characters long.';
+                }
+                // validate project description
+                if( empty( $pdes ) ) {
+                    $output['message'][] = 'Project description is required';
+                } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $pdes) ) {
+                    $output['message'][] = 'Project description should contain only alpha numeric characters.';
+                } elseif( strlen( $pdes ) > 5000 ) {
+                    $output['message'][] = 'Project description length should be less than 5000 characters long.';
+                }
+                // Validate project file
+                if( empty( $file_name ) ) {
+                    $output['message'][] = 'Please upload your project file.';
+                } elseif ( ! in_array( $extension, $allowed_extension ) ) {
+                    $output['message'][] = 'Uploaded file type is not allowed. We are currently allowing ' . implode(', ', $allowed_extension )  .' filetype';
+                } elseif( $file_size > $allowed_file_size ) {
+                    $output['message'][] = 'Your uploaded file size must be less than 5 MB';
+                }
+            }
+    
+            if( empty( $output['message'] ) ) {
+                $output['success'] = false;
+    
+                if( !empty( $file_name ) ) {
+                    if( move_uploaded_file($file_tmp_name, '../assets/images/projects/'.$new_file_name) ) {
+                        if( insert( [ 
+                            'project_title' => $ptitle, 
+                            'project_description' => $pdes, 
+                            'project_file' => serialize($new_file_name), 
+                            'username' => $username, 
+                            'edited_count' => 0,
+                        ], 'projects' ) ) {
+                            $output['success'] = true;
+                            $output['message'] = "Successfully submited your project.";
+                        } else {
+                            $output['success'] = false;
+                            $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+                        }
+    
+                        $sql_update = "UPDATE projects SET edited_count = edited_count + 1 WHERE username = '$username'";
+                        $sql_query = mysqli_query($mysqli, $sql_update);
+    
+                    } else {
+                        $output['success'] = false;
+                        $output['message'] = "Opps! Your project file is not uploading! Please contact administrator.";
+                    } 
+                }
+            }
+        }
+    }
+
+    echo json_encode($output);
+}
+
 // Process profile update form 
 if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
     

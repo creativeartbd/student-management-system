@@ -60,10 +60,17 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="submit-project.php">
-        <span class="menu-title">Submit Project</span>
-        <i class="mdi mdi-face-profile menu-icon"></i>
+      <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+        <span class="menu-title">Project</span>
+        <i class="menu-arrow"></i>
+        <i class="mdi mdi-book-open-page-variant menu-icon"></i>
       </a>
+      <div class="collapse" id="ui-basic">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item"> <a class="nav-link" href="submit-project.php">Submit Project</a></li>
+          <li class="nav-item"> <a class="nav-link" href="my-project.php">Your Project</a></li>
+        </ul>
+      </div>
     </li>
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) ) : ?>
     <li class="nav-item">

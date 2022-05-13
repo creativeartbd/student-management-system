@@ -1,0 +1,16 @@
+.textarea {
+    width: 100% !important;
+    border : 1px solid #ebedf2 !important;
+    font-size: inherit;
+}
+
+textarea,
+textarea::-webkit-input-placeholder {
+    font-size: 13px;
+    color : #c7c7c7;
+}
+
+textarea.form-control-lg {
+    color: #000;
+    font-size: 13px;
+}

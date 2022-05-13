@@ -14,5 +14,6 @@
     <link rel="stylesheet" href="<?php echo ROOT; ?>assets/css/style.css">
     <!-- End layout styles -->
     <link rel="shortcut icon" href="<?php echo ROOT; ?>assets/images/favicon.ico" />
+    <link rel="stylesheet" href="<?php echo ROOT; ?>assets/css/custom.css" />
   </head>
   <body>
