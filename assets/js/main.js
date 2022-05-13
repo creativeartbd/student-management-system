@@ -5,6 +5,7 @@
             e.preventDefault();
             var form = $(this);
             var data = new FormData(this);
+            var btn_level = $(".ajax-btn").val();
             $.ajax({
                 dataType: "json",
                 type: "POST",
@@ -17,9 +18,9 @@
                     $(".ajax-btn").prop("disabled", true);
                 },
                 success: function (data) {
-                    console.log(data);
+                    console.log(btn_level);
                     $(".ajax-btn").prop("disabled", false);
-                    $(".ajax-btn").val("Registration");
+                    $(".ajax-btn").val( btn_level );
                     var messages = data.message;
                     $(".result").html('');
                     if( !data.success ) {
