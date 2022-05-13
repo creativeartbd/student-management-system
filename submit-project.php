@@ -36,7 +36,7 @@ check_user_login_status();
                             <div class="mt-3">
                                 <input type="hidden" name="form" value="submitproject">
                                 <input type="submit" value="Submit Project" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
-                                check_user_login_status();</div>
+                            </div>
                         </form>
                     </div>
                 </div>

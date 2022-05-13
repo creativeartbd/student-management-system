@@ -16,7 +16,7 @@ check_user_login_status();
             </h3>
           </div>
           <div class="row">
-            <div class="col-md-6 grid-margin stretch-card">
+            <div class="col-md-7 grid-margin stretch-card">
                 <div class="card">
                     <div class="card-body">
                         <?php
@@ -32,6 +32,7 @@ check_user_login_status();
                           $project_file = unserialize( $project_file );
                           $uploaded_time = $result['uploaded_time'];
                           $edited_count = $result['edited_count'];
+                          $is_approved = $result['is_approved'];
                           $time_left =  3 - $edited_count;
                           if( $time_left == 1 ) {
                             $time_level = ' time';
@@ -41,6 +42,12 @@ check_user_login_status();
                         } else {
                           echo "<div class='alert alert-warning'>Seems like you didn't upload your project. Please go to Submit Project page and then submit.</div>";
                         }
+                        ?>
+
+                        <?php 
+                        if( $is_approved == 1 ) {
+                          echo "<div class='btn btn-block btn-gradient-success btn-lg'>Congratulations! Your project has been approved.</div>";
+                        } else {
                         ?>
                         <h4 class="card-title">Update your project.</h4>
                         <p class="card-description text-danger">Please keep in mind that you can edit your uploaded project only 3 times max. Now you have <?php echo ( 3 - $edited_count ); echo $time_level; ?> left.</p>
@@ -67,6 +74,7 @@ check_user_login_status();
                                 <input type="submit" value="Update Project" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                             </div>
                         </form>
+                        <?php } ?>
                     </div>
                 </div>
             </div>

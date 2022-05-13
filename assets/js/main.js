@@ -32,6 +32,7 @@
                             $(".result").append("<div class='alert alert-danger'>"+data.message[key]+"</div>");
                         }
                     } else {
+                        $(".ajax-btn").prop("disabled", true);
                         $(".result").append("<div class='alert alert-success'>"+data.message+"</div>");
                         document.getElementById("form").reset();
                         if( data.redirect ) {
