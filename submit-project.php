@@ -16,7 +16,7 @@ check_user_login_status();
             </h3>
           </div>
           <div class="row">
-            <div class="col-md-6 grid-margin stretch-card">
+            <div class="col-md-6 col-sm-12 grid-margin stretch-card">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title">Submit your project.</h4>
@@ -31,6 +31,23 @@ check_user_login_status();
                             <div class="form-group">
                                 <label>Upload/Change Project File</label>
                                 <input type="file" class="form-control form-control-lg" name="pfile">
+                            </div>
+                            <div class="form-group group-member">
+                              <label><b>Choose group member</b></label>
+                                <?php 
+                                $get_all_student = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration" );
+                                while( $get_all_student_result = mysqli_fetch_array( $get_all_student, MYSQLI_ASSOC ) ) {
+                                  $fname = $get_all_student_result['fname'];
+                                  $lname = $get_all_student_result['lname'];
+                                  $st_id = $get_all_student_result['st_id'];
+
+                                  echo '<div class="form-check form-check-success">';
+                                  echo '<label class="form-check-label">';
+                                    echo "<input type='checkbox' class='form-check-input' name='group_members[]' value='$st_id'> ".ucfirst( $fname ) . ' ' . ucfirst( $lname );
+                                  echo '<i class="input-helper"></i></label>';
+                                  echo '</div>';
+                                }
+                                ?>
                             </div>
                             <div class="form-group"><div class="result"></div></div>
                             <div class="mt-3">

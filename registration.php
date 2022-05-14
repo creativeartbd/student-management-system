@@ -1,6 +1,4 @@
-<?php require_once 'partials/header.php';
-check_user_login_status();
-?>
+<?php require_once 'partials/header.php';?>
 
     <div class="container-scroller">
       <?php require_once 'partials/top-header.php'?>
@@ -16,7 +14,7 @@ check_user_login_status();
               </h3>
             </div>
             <div class="row">
-              <div class="col-md-6 grid-margin stretch-card">
+              <div class="col-md-6 col-sm-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
                     <h4 class="card-title">Enter fill up the form below to a reister a new account.</h4>
@@ -37,11 +35,20 @@ check_user_login_status();
                         <input type="email" class="form-control form-control-lg" placeholder="Email Address" name="email">
                       </div>
                       <div class="form-group">
-                        <select name="registration_type" class="form-control">
+                        <select name="registration_type" class="form-control form-control-lg">
                             <option value="">--Select Registration Type--</option>
                             <option value="1">As Student</option>
                             <option value="2">As Teacher</option>
                         </select>
+                      </div>
+                      <div class="form-group">
+                        <input type="text" class="form-control form-control-lg" placeholder="Your roll no" name="roll">
+                      </div>
+                      <div class="form-group">
+                        <input type="text" class="form-control form-control-lg" placeholder="Your batch name" name="batch">
+                      </div>
+                      <div class="form-group">
+                        <input type="text" class="form-control form-control-lg" placeholder="Your departnemtn" name="department">
                       </div>
                       <div class="form-group"><div class="result"></div></div>
                       <div class="mt-3">

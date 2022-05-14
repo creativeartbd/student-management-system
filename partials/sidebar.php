@@ -36,6 +36,12 @@
         <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
       </a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" href="profile.php">
+        <span class="menu-title">Profile</span>
+        <i class="mdi mdi-face-profile menu-icon"></i>
+      </a>
+    </li>
     <?php endif; ?>
     <li class="nav-item">
       <a class="nav-link" href="index.php">
@@ -57,12 +63,6 @@
       </a>
     </li>
     <?php endif; ?>
-    <li class="nav-item">
-      <a class="nav-link" href="profile.php">
-        <span class="menu-title">Profile</span>
-        <i class="mdi mdi-face-profile menu-icon"></i>
-      </a>
-    </li>
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) && $_SESSION['login_type'] == 1 ) : ?>
     <li class="nav-item">
       <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">

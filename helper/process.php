@@ -1,8 +1,59 @@
 <?php
 require_once 'functions.php';
 
+// process goal reply 
+if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
+    $goal_reply = htmlspecialchars(trim($_POST['goal_reply'] ) );
+}
 
-// Process profile update form 
+
+// Process set goal form 
+if( isset( $_POST['form']) && $_POST['form'] == 'setgoal' ) {
+
+    $goal_title = htmlspecialchars( $_POST['goal_title'] );
+    $goal_to = (int) htmlspecialchars( $_POST['st_id'] );
+    $username = $_SESSION['username'];
+    $st_id = (int) $_SESSION['st_id'];
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+
+    if( isset( $goal_title ) && isset( $goal_to ) ) {
+        if( empty( $goal_title ) && empty( $goal_title ) ) {
+            $output['message'][] = 'All fields are required.';
+        } else {
+            if( empty( $goal_title ) ) {
+                $output['message'][] = 'Project goal title is required';
+            } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_,?{}[\]\\ \d]+$/', $goal_title) ) {
+                $output['message'][] = 'Project goal should contain only alpha numeric characters.';
+            } elseif( strlen( $goal_title ) < 10 ) {
+                $output['message'][] = 'Project goal length should be more than 10 characters long.';
+            }
+
+            if( empty( $goal_to ) ) {
+                $output['message'][] = 'Student id is missing';
+            }
+        }
+
+        if( empty( $output['message'] ) ) {
+            if( insert( [ 
+                'goal_title' => $goal_title, 
+                'goal_to' => $goal_to,
+                'goal_by' => $username,
+            ], 'sms_goal' ) ) {
+                $output['success'] = true;
+                $output['message'] = "Successfully added a new goal.";
+            } else {
+                $output['success'] = false;
+                $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+            }
+        }
+        echo json_encode($output);
+    }
+}
+
+// Process project approve form 
 if( isset( $_POST['form']) && $_POST['form'] == 'approve_project' ) {
     
     $student_username = htmlspecialchars(trim($_POST['student_username']));
@@ -43,6 +94,13 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
     
     $ptitle = htmlspecialchars( $_POST['ptitle'] );
     $pdes = htmlspecialchars( $_POST['pdes'] );
+    $group_members = isset( $_POST['group_members'] ) ? $_POST['group_members'] : '';
+    $group_members_arr = [];
+    if (!empty( $group_members ) && is_array( $group_members ) ) {
+        foreach( $group_members as $key => $value ) {
+            $group_members_arr[] = filter_var( $value, FILTER_SANITIZE_STRING );
+        }
+    }
 
     $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
     if( isset( $_FILES['pfile']['name'] ) ) {
@@ -74,8 +132,8 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
     if( $found_count >= 3 ) {
         $output['message'][] = 'You have edited your project 3 times, No more edit is allowed.';
     } else {
-        if( isset( $ptitle) && isset( $pdes ) ) {
-            if( empty( $ptitle ) && empty( $pdes ) ) {
+        if( isset( $ptitle) && isset( $pdes ) && isset( $group_members ) ) {
+            if( empty( $ptitle ) && empty( $pdes ) && empty( $group_members ) ) {
                 $output['message'][] = 'All fields is required';
             } else {
                 // validate project title
@@ -102,6 +160,12 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                         $output['message'][] = 'Your uploaded file size must be less than 5 MB';
                     }
                 }
+                // validate group members
+                if( empty( $group_members ) ) {
+                    $output['message'][] = 'Please choose your group members. You can choose upto 10 members.';
+                } elseif( !preg_grep('/^[0-9\d]+$/', $group_members) ) {
+                    $output['message'][] = 'Invalid group member is given.';
+                } 
             }
     
             if( empty( $output['message'] ) ) {
@@ -110,6 +174,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                     'project_title' => $ptitle, 
                     'project_description' => $pdes, 
                     'username' => $username, 
+                    'group_members' => serialize( $group_members )
                 ];
     
                 if( ! empty( $file_name ) ) { 
@@ -153,6 +218,14 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
     $ptitle = htmlspecialchars( $_POST['ptitle'] );
     $pdes = htmlspecialchars( $_POST['pdes'] );
 
+    $group_members = isset( $_POST['group_members'] ) ? $_POST['group_members'] : '';
+    $group_members_arr = [];
+    if (!empty( $group_members ) && is_array( $group_members ) ) {
+        foreach( $group_members as $key => $value ) {
+            $group_members_arr[] = filter_var( $value, FILTER_SANITIZE_STRING );
+        }
+    }
+
     $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
     if( isset( $_FILES['pfile']['name'] ) ) {
         $file_name = htmlspecialchars( $_FILES['pfile']['name'] );
@@ -167,6 +240,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
     $allowed_file_size = 5000000; // 5 MB file size allowed
     $new_file_name = time().'.'.$extension;
     $username = $_SESSION['username'];
+    $st_id = (int) $_SESSION['st_id'];
 
     // Check existence
     $check_existnece = "SELECT username, edited_count FROM sms_projects WHERE username = '$username' ";
@@ -182,9 +256,9 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
     if( $found_check > 0 ) {
         $output['message'][] = 'You have already submited your project. Please update your existing submitted project if it\'s required.';
     } else {
-        if( isset( $ptitle) && isset( $pdes ) && isset( $file_name) ) {
+        if( isset( $ptitle) && isset( $pdes ) && isset( $file_name) && isset( $group_members_arr ) ) {
         
-            if( empty( $ptitle ) && empty( $pdes ) && empty( $file_name ) ) {
+            if( empty( $ptitle ) && empty( $pdes ) && empty( $file_name ) && empty( $group_members_arr ) ) {
                 $output['message'][] = 'All fields is required';
             } else {
                 // validate project title
@@ -211,6 +285,12 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
                 } elseif( $file_size > $allowed_file_size ) {
                     $output['message'][] = 'Your uploaded file size must be less than 5 MB';
                 }
+                // validate group members
+                if( empty( $group_members ) ) {
+                    $output['message'][] = 'Please choose your group members. You can choose upto 10 members.';
+                } elseif( !preg_grep('/^[0-9\d]+$/', $group_members) ) {
+                    $output['message'][] = 'Invalid group member is given.';
+                } 
             }
     
             if( empty( $output['message'] ) ) {
@@ -221,9 +301,11 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
                         if( insert( [ 
                             'project_title' => $ptitle, 
                             'project_description' => $pdes, 
-                            'project_file' => serialize($new_file_name), 
+                            'project_file' => serialize( $new_file_name ), 
                             'username' => $username, 
+                            'st_id' => $st_id, 
                             'edited_count' => 0,
+                            'group_members' => serialize( $group_members )
                         ], 'sms_projects' ) ) {
                             $output['success'] = true;
                             $output['message'] = "Successfully submited your project.";
@@ -376,13 +458,15 @@ if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
     $output['redirect'] = 'index.php';
 
     // Check username and password
-    $check_user = "SELECT username, status FROM sms_registration WHERE username = '$username' AND password = '$hash_password' AND st_type = '$login_type' ";
+    $check_user = "SELECT username, status, st_id FROM sms_registration WHERE username = '$username' AND password = '$hash_password' AND st_type = '$login_type' ";
     $user_query = mysqli_query( $mysqli, $check_user );
     $found_user = mysqli_num_rows( $user_query );
+    $st_id = '';
 
     if( $found_user ) {
         $result = mysqli_fetch_array( $user_query );
         $status = $result['status'];
+        $st_id = $result['st_id'];
     }
     
     if( isset( $username) && isset( $password ) ) {
@@ -411,6 +495,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
                 $output['message'][] = "Successfully Logged, Now you are redirecting....";
                 $_SESSION['username'] = $username;
                 $_SESSION['login_type'] = $login_type; 
+                $_SESSION['st_id'] = $st_id; 
             } else {
                 $output['success'] = false;
                 $output['message'][] = "Opps! Something wen't wrong! Please contact administrator";
@@ -429,6 +514,9 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
     $password = htmlspecialchars( $_POST['password'] );
     $hash_password = hash( 'sha512', $password );
     $email = htmlspecialchars( $_POST['email'] );
+    $roll = htmlspecialchars( $_POST['roll'] );
+    $batch = htmlspecialchars( $_POST['batch'] );
+    $department = htmlspecialchars( $_POST['department'] );
     $registration_type = htmlspecialchars( $_POST['registration_type'] );
     
     // Check existing user
@@ -452,8 +540,8 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
     $output['success'] = false;
     
     // check existence
-    if( isset( $fname) && isset( $lname ) && isset( $username) && isset( $password ) && isset( $email ) && isset( $registration_type ) ) {
-        if( empty( $fname ) && empty( $lname ) && empty( $username ) && empty( $password ) && empty( $email ) && empty( $registration_type ) ) {
+    if( isset( $fname) && isset( $lname ) && isset( $username) && isset( $password ) && isset( $email ) && isset( $registration_type ) && isset( $roll ) && isset( $batch) && isset( $department ) ) {
+        if( empty( $fname ) && empty( $lname ) && empty( $username ) && empty( $password ) && empty( $email ) && empty( $registration_type ) && empty( $roll ) && empty( $batch ) && empty( $department ) ) {
             $output['message'][] = 'All fields is required';
         } else {
             // validate first name
@@ -502,6 +590,30 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
             } elseif( !in_array( $registration_type, [1, 2]) ) {
                 $output['message'][] = 'Invalid registration type given.';
             }
+            // Validate roll name
+            if( empty( $roll ) ) {
+                $output['message'][] = 'Your roll number is required';
+            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $roll) ) {
+                $output['message'][] = 'Your roll number should contain only alpha numeric characters.';
+            } elseif( strlen( $roll ) > 15 || strlen( $roll ) < 2 ) {
+                $output['message'][] = 'Invalid roll number given';
+            }
+            // Validate batch
+            if( empty( $batch ) ) {
+                $output['message'][] = 'Your batch name is required';
+            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $batch) ) {
+                $output['message'][] = 'Your batch name should contain only alpha numeric characters.';
+            } elseif( strlen( $batch ) > 15 || strlen( $batch ) < 2 ) {
+                $output['message'][] = 'Invalid batch name given';
+            }
+            // Validate department
+            if( empty( $department ) ) {
+                $output['message'][] = 'Your department name is required';
+            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $department) ) {
+                $output['message'][] = 'Your department name should contain only alpha numeric characters.';
+            } elseif( strlen( $batch ) > 30 || strlen( $department ) < 2 ) {
+                $output['message'][] = 'Invalid department name given';
+            }
         }
 
         if( empty( $output['message'] ) ) {
@@ -513,6 +625,9 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
                 'password' => $hash_password, 
                 'email' => $email,
                 'st_type' => $registration_type,
+                'roll' => $roll,
+                'batch' => $batch,
+                'department' => $department,
             ], 'sms_registration' ) ) {
                 $output['success'] = true;
                 $output['message'] = "Successfully registered a new account.";

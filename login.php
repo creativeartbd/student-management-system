@@ -30,7 +30,7 @@
               </h3>
             </div>
             <div class="row">
-              <div class="col-md-6 grid-margin stretch-card">
+              <div class="col-md-6 col-sm-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
                     <h4 class="card-title">Enter your username and password to acccess your account!</h4>
@@ -42,7 +42,7 @@
                         <input type="password" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Password" name="password">
                       </div>
                       <div class="form-group">
-                        <select name="login_type" class="form-control">
+                        <select name="login_type" class="form-control form-control-lg">
                             <option value="">-- Login As --</option>
                             <option value="1">Student</option>
                             <option value="2">Teacher</option>
