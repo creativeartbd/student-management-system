@@ -1,6 +1,38 @@
 <?php
 require_once 'functions.php';
 
+// process approve goal 
+if( isset( $_POST['form']) && $_POST['form'] == 'approve_goal' ) {
+    $st_id = (int) htmlspecialchars( $_POST['st_id'] );
+    $goal_id = (int) htmlspecialchars( $_POST['goal_id'] );
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+
+    if( isset( $st_id) && isset( $goal_id ) ) {
+        if( empty( $st_id ) ) {
+            $output['message'][] = 'Goal id is missing';
+        }
+        if( empty( $st_id ) ) {
+            $output['message'][] = 'Student id is missing';
+        }
+    }
+
+    if( empty( $output['message'] ) ) {
+        $update_goal = mysqli_query( $mysqli, "UPDATE sms_gola SET is_goal_end = 1, is_goal_approve = 1 WHERE goal_id = '$goal_id' AND goal_to = '$st_id' ");
+        if( $update_goal ) {
+            $output['success'] = true;
+            $output['message'] = "Successfully approved the goal.";
+        } else {
+            $output['success'] = false;
+            $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+        }
+    }
+
+    echo json_encode($output);
+
+}
 // process goal reply 
 if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
 

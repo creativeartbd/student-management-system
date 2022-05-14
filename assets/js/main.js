@@ -1,10 +1,24 @@
 (function ($) {
     "use strict";
     $(document).ready(function () {
+        $(".registration_type").change( function() {
+            var current = $(this).val();
+            if( current == 2 ) {
+                $(".hide_me").hide('slow');
+            } else {
+                $(".hide_me").show('slow');
+            }
+        });
         $(".approve_project").click(function(){
            var username = $(this).data('username');
            $(".set_username").val( username );
         });
+        $(".approve_goal").click(function(){
+            var st_id = $(this).data('st-id');
+            var goal_id = $(this).data('goal-id');
+            $(".set_st_id").val( st_id );
+            $(".set_goal_id").val( goal_id );
+         });
         $(".goal_answer").click(function(){
             var goal_id = $(this).data('goal-id');
             $(".set_goal_id").val( goal_id );

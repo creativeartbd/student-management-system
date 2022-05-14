@@ -35,20 +35,22 @@
                         <input type="email" class="form-control form-control-lg" placeholder="Email Address" name="email">
                       </div>
                       <div class="form-group">
-                        <select name="registration_type" class="form-control form-control-lg">
+                        <select name="registration_type" class="form-control form-control-lg registration_type">
                             <option value="">--Select Registration Type--</option>
                             <option value="1">As Student</option>
                             <option value="2">As Teacher</option>
                         </select>
                       </div>
-                      <div class="form-group">
-                        <input type="text" class="form-control form-control-lg" placeholder="Your roll no" name="roll">
-                      </div>
-                      <div class="form-group">
-                        <input type="text" class="form-control form-control-lg" placeholder="Your batch name" name="batch">
-                      </div>
-                      <div class="form-group">
-                        <input type="text" class="form-control form-control-lg" placeholder="Your departnemtn" name="department">
+                      <div class="hide_me">
+                        <div class="form-group">
+                          <input type="text" class="form-control form-control-lg" placeholder="Your roll no" name="roll">
+                        </div>
+                        <div class="form-group">
+                          <input type="text" class="form-control form-control-lg" placeholder="Your batch name" name="batch">
+                        </div>
+                        <div class="form-group">
+                          <input type="text" class="form-control form-control-lg" placeholder="Your departnemtn" name="department">
+                        </div>
                       </div>
                       <div class="form-group"><div class="result"></div></div>
                       <div class="mt-3">

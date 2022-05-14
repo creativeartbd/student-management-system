@@ -9,7 +9,11 @@
           $username = $_SESSION['username'];
           $st_type = $_SESSION['login_type'];
           $result = select('sms_registration', ['profile_pic'], "username='$username' AND st_type = '$st_type'");
-          $profile_pic = $result['profile_pic']; 
+          $profile_pic = '';
+          if( $result ) {
+            $profile_pic = $result['profile_pic']; 
+          }
+          
           if($profile_pic) {
             echo "<img src='assets/images/profile/$profile_pic' alt='profile'>";
           } else {

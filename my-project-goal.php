@@ -29,6 +29,7 @@ check_user_login_status();
                                 echo '<th>Goal Title</th>';
                                 echo '<th>Date</th>';
                                 echo '<th>Action</th>';
+                                echo '<th>Status</th>';
                             echo '</tr>';
                             $count = 1;
                         while ( $get_goal_result = mysqli_fetch_array( $get_goal_query, MYSQLI_ASSOC ) ) {
@@ -40,6 +41,7 @@ check_user_login_status();
                                 echo "<td>$goal_title</td>";
                                 echo "<td>$goal_send</td>";
                                 echo "<td><a href='#' data-goal-id='$goal_id' data-bs-toggle='modal' data-bs-target='#exampleModal' class='btn btn-gradient-danger btn-sm goal_answer'>Answer</a></td>";
+                                echo "<td></td>";
                             echo '</tr>';
                             $count++;
                         }
