@@ -3,7 +3,81 @@ require_once 'functions.php';
 
 // process goal reply 
 if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
+
     $goal_reply = htmlspecialchars(trim($_POST['goal_reply'] ) );
+    $goal_id = (int) htmlspecialchars(trim($_POST['goal_id'] ) );
+    $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
+    if( isset( $_FILES['goal_pic']['name'] ) ) {
+        $file_name = htmlspecialchars( $_FILES['goal_pic']['name'] );
+        $file_tmp_name = htmlspecialchars( $_FILES['goal_pic']['tmp_name'] );
+        $file_size = htmlspecialchars( $_FILES['goal_pic']['size'] );
+        $file_type = htmlspecialchars( $_FILES['goal_pic']['type'] );
+
+        $allowed_extension = [ 'pdf', 'doc', 'docx' ];
+        $explode = explode( '.', $file_name );
+        $extension = end( $explode );
+    }
+    $allowed_file_size = 5000000; // 5 MB file size allowed
+    $new_file_name = time().'.'.$extension;
+    $st_id = (int) $_SESSION['st_id'];
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+
+    if( isset( $goal_reply ) && isset( $file_name ) ) {
+        if( empty( $goal_reply ) && empty( $file_name ) ) {
+            $output['message'][] = 'All fields are required.';
+        } else {
+            // validate project description
+            if( empty( $goal_reply ) ) {
+                $output['message'][] = 'Goal description is required';
+            } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_?<>}{[\], \d]+$/', $goal_reply) ) {
+                $output['message'][] = 'Goal description should contain only alpha numeric characters.';
+            } elseif( strlen( $goal_reply ) > 5000 || strlen( $goal_reply ) < 10 ) {
+                $output['message'][] = 'Goal description length should be less than 5000 characters long.';
+            }
+            // Validate project file
+            if( empty( $file_name ) ) {
+                $output['message'][] = 'Please upload your project file.';
+            } elseif ( ! in_array( $extension, $allowed_extension ) ) {
+                $output['message'][] = 'Uploaded file type is not allowed. We are currently allowing ' . implode(', ', $allowed_extension )  .' filetype';
+            } elseif( $file_size > $allowed_file_size ) {
+                $output['message'][] = 'Your uploaded file size must be less than 5 MB';
+            }
+
+            if( empty( $goal_id ) ) {
+                $output['message'][] = 'Missing gola id';
+            }
+            
+        }
+
+        if( empty( $output['message'] ) ) {
+            $output['success'] = false;
+
+            if( !empty( $file_name ) ) {
+                if( move_uploaded_file($file_tmp_name, '../assets/images/projects/'.$new_file_name) ) {
+                    if( insert( [ 
+                        'goal_reply' => $goal_reply, 
+                        'goal_file' => serialize( $new_file_name ), 
+                        'st_id' => $st_id, 
+                        'goal_id' => $goal_id
+                    ], 'sms_goal_answer' ) ) {
+                        $output['success'] = true;
+                        $output['message'] = "Successfully submited your goal.";
+                    } else {
+                        $output['success'] = false;
+                        $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+                    }
+                } else {
+                    $output['success'] = false;
+                    $output['message'] = "Opps! Your project file is not uploading! Please contact administrator.";
+                } 
+            }
+        }
+
+        echo json_encode($output);
+    }
 }
 
 

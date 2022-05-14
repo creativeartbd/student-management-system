@@ -5,6 +5,10 @@
            var username = $(this).data('username');
            $(".set_username").val( username );
         });
+        $(".goal_answer").click(function(){
+            var goal_id = $(this).data('goal-id');
+            $(".set_goal_id").val( goal_id );
+         });
         $(document).on("submit", "#form", function (e) {
             e.preventDefault();
             var form = $(this);

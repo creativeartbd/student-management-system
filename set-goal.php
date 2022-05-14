@@ -32,19 +32,19 @@ check_user_login_status();
               </h3>
             </div>
             <div class="row">
-              <div class="col-md-12 grid-margin stretch-card">
+              <div class="col-md-6 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
                     <?php
                     $username = htmlspecialchars( $_GET['username'] );
                     $st_id = (int) htmlspecialchars($_GET['st_id'] );
                     $st_type = (int) $_SESSION['login_type'];
-                    $result = select('sms_projects', ['*'], "username='$username'"); 
+                    $result = select('sms_goal', ['*'], "goal_to='$st_id'"); 
                     ?>
                     <h4 class="card-title">Set the project goal</h4>
                     <form action="" method="POST" id="form" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="">Write your project goal title</label>
+                            <label for="">Write the project goal title</label>
                             <textarea  class="form-control form-control-lg" placeholder="Write your project goal" name="goal_title" id="" cols="30" rows="10"></textarea>
                         </div>
                         <div class="form-group"><div class="result"></div></div>
@@ -54,6 +54,21 @@ check_user_login_status();
                             <input type="submit" value="Add Project Goal" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                         </div>
                     </form>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <h4 class="card-title">Al Goal </h4>
+                    <table class="table table-bordered">
+                      <tr class="table-success">
+                        <th>Goal Title</th>
+                      </tr>
+                      <tr>
+                        <td><?php echo $result['goal_title']; ?></td>
+                      </tr>
+                    </table>
                   </div>
                 </div>
               </div>
