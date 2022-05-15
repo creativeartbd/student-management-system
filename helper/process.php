@@ -1,6 +1,66 @@
 <?php
 require_once 'functions.php';
 
+if( isset( $_POST['form']) && $_POST['form'] == 'getchat' ) {
+    
+    $st_id = (int) $_SESSION['st_id'];
+    $get_g_id = mysqli_query( $mysqli, "SELECT g_id FROM sms_registration WHERE st_id = '$st_id' ");
+    $result_g_id = mysqli_fetch_array( $get_g_id, MYSQLI_ASSOC );
+    $g_id = (int) $result_g_id['g_id'];
+
+    $get_msg =  mysqli_query( $mysqli, "SELECT sc.*, sr.username FROM sms_chat AS sc LEFT JOIN sms_registration AS sr ON sr.st_id = sc.st_id WHERE sc.g_id = '$g_id' ");
+    while( $result_get_msg = mysqli_fetch_array( $get_msg, MYSQLI_ASSOC ) ) {
+        $chat_text = $result_get_msg['chat_text'];
+        $chat_time = $result_get_msg['chat_time'];
+        $uname = $result_get_msg['username'];
+        echo "<div class='row mb-2'><div class='col-9'><strong>$uname: </strong>$chat_text </div><div class='col-3 text-end text-small'>$chat_time</div></div>";
+    }
+}
+
+// process approve goal 
+if( isset( $_POST['form']) && $_POST['form'] == 'chat' ) {
+    $chat_text = htmlspecialchars( trim( $_POST['chat'] ) );
+    $st_id = (int) $_SESSION['st_id'];
+    $username = $_SESSION['username'];
+
+    $get_group_id = mysqli_query( $mysqli, "SELECT g_id FROM sms_registration WHERE  st_id = '$st_id' ");
+    $found_groupu_id = mysqli_num_rows( $get_group_id );
+
+    $group_id = '';
+    if( $found_groupu_id > 0 ) {
+        $result_group_id = mysqli_fetch_array( $get_group_id, MYSQLI_ASSOC );
+        $group_id = $result_group_id['g_id'];
+    }
+   
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+
+    if( isset( $chat_text ) ) {
+        if( empty( $chat_text ) ) {
+            $output['message'][] = 'Please enter your message.';
+        } elseif( empty( $group_id ) ) {
+            $output['message'][] = "Seems like you didn't added to any gourp.";
+        }
+
+        if( empty( $output['message'] ) ) {
+            $output['success'][] = false;
+            $insert = mysqli_query( $mysqli, "INSERT INTO sms_chat(chat_text, st_id, g_id ) value ( '$chat_text', '$st_id', '$group_id' ) ");
+            if( $insert ) {
+                $time = date("Y-m-d H:i:s", time());
+                $output['success'][] = true;
+                $output['message'][] = "<div class='row mb-2'><div class='col-9'><strong>$username: </strong>$chat_text </div><div class='col-3 text-end text-small'>$time</div></div>";
+            } else {
+                $output['success'][] = false;
+                $output['message'][] = "Opps! Something wen't wrong! Please contact administrator.";
+            }
+        }
+    
+        echo json_encode($output);
+    }
+}
+
 // process approve goal 
 if( isset( $_POST['form']) && $_POST['form'] == 'approve_goal' ) {
 
@@ -205,6 +265,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
     
     $ptitle = htmlspecialchars( $_POST['ptitle'] );
     $pdes = htmlspecialchars( $_POST['pdes'] );
+    $g_id = (int) htmlspecialchars( $_POST['g_id'] );
     $group_members = isset( $_POST['group_members'] ) ? $_POST['group_members'] : '';
     $group_members_arr = [];
     if (!empty( $group_members ) && is_array( $group_members ) ) {
@@ -229,6 +290,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
     
     $username = $_SESSION['username'];
     $st_type = $_SESSION['login_type'];
+    $st_id = $_SESSION['st_id'];
 
     // Hold all errors
     $output['message'] = [];
@@ -240,11 +302,16 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
     $result = mysqli_fetch_array( $edited_query );
     $found_count = (int) $result['edited_count'];
 
-    if( $found_count >= 3 ) {
+    // get existing members
+    $get_ex_members = mysqli_query( $mysqli, "SELECT group_members FROM sms_group WHERE st_id = '$st_id' ");
+    $result_ex_members = mysqli_fetch_array( $get_ex_members, MYSQLI_ASSOC );
+    $ex_members = unserialize( $result_ex_members[ 'group_members' ] );
+
+    if( $found_count >= 300 ) {
         $output['message'][] = 'You have edited your project 3 times, No more edit is allowed.';
     } else {
-        if( isset( $ptitle) && isset( $pdes ) && isset( $group_members ) ) {
-            if( empty( $ptitle ) && empty( $pdes ) && empty( $group_members ) ) {
+        if( isset( $ptitle) && isset( $pdes ) && isset( $group_members_arr ) ) {
+            if( empty( $ptitle ) && empty( $pdes ) && empty( $group_members_arr ) ) {
                 $output['message'][] = 'All fields is required';
             } else {
                 // validate project title
@@ -274,7 +341,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                 // validate group members
                 if( empty( $group_members ) ) {
                     $output['message'][] = 'Please choose your group members. You can choose upto 10 members.';
-                } elseif( !preg_grep('/^[0-9\d]+$/', $group_members) ) {
+                } elseif( !preg_grep('/^[0-9\d]+$/', $group_members_arr) ) {
                     $output['message'][] = 'Invalid group member is given.';
                 } 
             }
@@ -285,7 +352,6 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                     'project_title' => $ptitle, 
                     'project_description' => $pdes, 
                     'username' => $username, 
-                    'group_members' => serialize( $group_members )
                 ];
     
                 if( ! empty( $file_name ) ) { 
@@ -300,6 +366,9 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                 $update = update( 'sms_projects', $updating_data,  [ 
                     'username' => $username, 
                 ] );
+
+                $group_members_arr[] = $st_id;
+                $group_members = serialize( $group_members_arr );
     
                 if( $update ) {
                     $output['success'] = true;
@@ -316,6 +385,23 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
                     $output['success'] = false;
                     $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
                 } 
+
+                $update_members = mysqli_query( $mysqli, "UPDATE sms_group SET group_members = '$group_members' WHERE st_id = '$st_id' ");
+
+                if( ! $update_members ) {
+                    $output['success'] = false;
+                    $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+                }
+
+                $diffs = array_diff( $ex_members, $group_members_arr ) ;
+
+                foreach( $group_members_arr as $key  => $member ) {
+                    $update = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$g_id' WHERE st_id = '$member' ");
+                }
+
+                foreach( $diffs  as $key => $ex_member ) {
+                    $update1 = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = 0 WHERE st_id = '$ex_member' ");
+                }
             }
         }
     }
@@ -416,17 +502,36 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
                             'username' => $username, 
                             'st_id' => $st_id, 
                             'edited_count' => 0,
-                            'group_members' => serialize( $group_members )
                         ], 'sms_projects' ) ) {
-                            $output['success'] = true;
-                            $output['message'] = "Successfully submited your project.";
+                            $output['success'][] = true;
+                            $output['message'][] = "Successfully submited your project.";
+
+                            $group_members_arr[] = $st_id;
+                            // addd the group member to group table
+                            $group_members = serialize( $group_members_arr );
+                            $insert_group = mysqli_query( $mysqli, "INSERT INTO sms_group( group_members, st_id ) VALUES ( '$group_members', '$st_id' ) ");
+                            $g_id = mysqli_insert_id( $mysqli );
+
+                            if( ! $insert_group ) {
+                                $output['success'][] = false;
+                                $output['message'][] = "Opps! Your project file is not uploading! Please contact administrator.";
+                            }
+                            
+                            foreach( $group_members_arr as $key => $member ) {
+                                $update_reg = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$g_id' WHERE st_id = '$member' " );  
+                            }
+
+                            if( ! $update_reg ) {
+                                $output['success'][] = false;
+                                $output['message'][] = "Opps! Your project file is not uploading! Please contact administrator.";
+                            } 
                         } else {
-                            $output['success'] = false;
-                            $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+                            $output['success'][] = false;
+                            $output['message'][] = "Opps! Something wen't wrong! Please contact administrator.";
                         }
                     } else {
-                        $output['success'] = false;
-                        $output['message'] = "Opps! Your project file is not uploading! Please contact administrator.";
+                        $output['success'][] = false;
+                        $output['message'][] = "Opps! Your project file is not uploading! Please contact administrator.";
                     } 
                 }
             }

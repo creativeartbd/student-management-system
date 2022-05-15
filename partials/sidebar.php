@@ -82,6 +82,12 @@
         </ul>
       </div>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" href="chat.php">
+        <span class="menu-title">Chat</span>
+        <i class="mdi mdi-projector menu-icon"></i>
+      </a>
+    </li>
     <?php endif; ?>
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) && $_SESSION['login_type'] == 2 ) : ?>
     <li class="nav-item">

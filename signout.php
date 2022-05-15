@@ -6,4 +6,7 @@ if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) && isset(
     unset( $_SESSION['st_id'] );
     header("location:index.php");
     exit();
-} 
+} else {
+    header( "location:login.php");
+    exit();
+}

@@ -35,7 +35,6 @@ check_user_login_status();
                           $uploaded_time = $result['uploaded_time'];
                           $edited_count = $result['edited_count'];
                           $is_approved = $result['is_approved'];
-                          $group_members = unserialize($result['group_members']);
                           $time_left =  3 - $edited_count;
                           if( $time_left == 1 ) {
                             $time_level = ' time';
@@ -67,9 +66,16 @@ check_user_login_status();
                             <div class="form-group group-member">
                               <label><b>Choose group member</b></label>
                                 <?php 
-                                $get_all_student = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration" );
+                                $st_id = (int) $_SESSION['st_id'];
+                                $get_all_student = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration WHERE st_type = 1 AND st_id != '$st_id' " );
+
+                                $get_group_members = mysqli_query( $mysqli, "SELECT * FROM sms_group WHERE st_id = '$st_id' ");
+                                $result_group_members = mysqli_fetch_array( $get_group_members );
+                                $group_members = unserialize( $result_group_members['group_members'] );
+                                $g_id = (int) $result_group_members['g_id'];
                                 
                                 while( $get_all_student_result = mysqli_fetch_array( $get_all_student, MYSQLI_ASSOC ) ) {
+                                 
                                   $fname = $get_all_student_result['fname'];
                                   $lname = $get_all_student_result['lname'];
                                   $st_id = $get_all_student_result['st_id'];
@@ -87,6 +93,7 @@ check_user_login_status();
                             </div>
                             <div class="form-group"><div class="result"></div></div>
                             <div class="mt-3">
+                                <input type="hidden" name="g_id" value=<?php echo $g_id; ?>>
                                 <input type="hidden" name="form" value="updateproject">
                                 <input type="submit" value="Update Project" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                             </div>

@@ -35,7 +35,8 @@ check_user_login_status();
                             <div class="form-group group-member">
                               <label><b>Choose group member</b></label>
                                 <?php 
-                                $get_all_student = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration" );
+                                $st_id = (int) $_SESSION['st_id'];
+                                $get_all_student = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration WHERE st_type = 1 AND st_id != '$st_id' " );
                                 while( $get_all_student_result = mysqli_fetch_array( $get_all_student, MYSQLI_ASSOC ) ) {
                                   $fname = $get_all_student_result['fname'];
                                   $lname = $get_all_student_result['lname'];
