@@ -318,7 +318,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject' ) {
 }
 
 
-// Process registration form 
+// Proces submit project form 
 if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
     // get all form field value
     $ptitle = htmlspecialchars( $_POST['ptitle'] );
@@ -614,7 +614,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
 // Process registration form 
 if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
     // get all form field value
-    $fname = htmlspecialchars( $_POST['fname'] );
+    $fname = validate( $_POST['fname'] );
     $lname = htmlspecialchars( $_POST['lname'] );
     $username = htmlspecialchars( $_POST['username'] );
     $password = htmlspecialchars( $_POST['password'] );
@@ -696,45 +696,56 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
             } elseif( !in_array( $registration_type, [1, 2]) ) {
                 $output['message'][] = 'Invalid registration type given.';
             }
-            // Validate roll name
-            if( empty( $roll ) ) {
-                $output['message'][] = 'Your roll number is required';
-            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $roll) ) {
-                $output['message'][] = 'Your roll number should contain only alpha numeric characters.';
-            } elseif( strlen( $roll ) > 15 || strlen( $roll ) < 2 ) {
-                $output['message'][] = 'Invalid roll number given';
-            }
-            // Validate batch
-            if( empty( $batch ) ) {
-                $output['message'][] = 'Your batch name is required';
-            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $batch) ) {
-                $output['message'][] = 'Your batch name should contain only alpha numeric characters.';
-            } elseif( strlen( $batch ) > 15 || strlen( $batch ) < 2 ) {
-                $output['message'][] = 'Invalid batch name given';
-            }
-            // Validate department
-            if( empty( $department ) ) {
-                $output['message'][] = 'Your department name is required';
-            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $department) ) {
-                $output['message'][] = 'Your department name should contain only alpha numeric characters.';
-            } elseif( strlen( $batch ) > 30 || strlen( $department ) < 2 ) {
-                $output['message'][] = 'Invalid department name given';
+
+            // if registration type for student then validate this
+            if( 1 == $registration_type ) {
+                // Validate roll name
+                if( empty( $roll ) ) {
+                    $output['message'][] = 'Your roll number is required';
+                } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $roll) ) {
+                    $output['message'][] = 'Your roll number should contain only alpha numeric characters.';
+                } elseif( strlen( $roll ) > 15 || strlen( $roll ) < 2 ) {
+                    $output['message'][] = 'Invalid roll number given';
+                }
+                // Validate batch
+                if( empty( $batch ) ) {
+                    $output['message'][] = 'Your batch name is required';
+                } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $batch) ) {
+                    $output['message'][] = 'Your batch name should contain only alpha numeric characters.';
+                } elseif( strlen( $batch ) > 15 || strlen( $batch ) < 2 ) {
+                    $output['message'][] = 'Invalid batch name given';
+                }
+                // Validate department
+                if( empty( $department ) ) {
+                    $output['message'][] = 'Your department name is required';
+                } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $department) ) {
+                    $output['message'][] = 'Your department name should contain only alpha numeric characters.';
+                } elseif( strlen( $batch ) > 30 || strlen( $department ) < 2 ) {
+                    $output['message'][] = 'Invalid department name given';
+                }
             }
         }
 
         if( empty( $output['message'] ) ) {
             $output['success'] = false;
-            if( insert( [ 
+
+            $inserting_data = [ 
                 'fname' => $fname, 
                 'lname' => $lname, 
                 'username' => $username, 
                 'password' => $hash_password, 
                 'email' => $email,
                 'st_type' => $registration_type,
-                'roll' => $roll,
-                'batch' => $batch,
-                'department' => $department,
-            ], 'sms_registration' ) ) {
+            ];
+
+            // add follow column if the registration is for student
+            if( 1 == $registration_type ) {
+                $inserting_data['roll'] = $roll;
+                $inserting_data['batch'] = $batch;
+                $inserting_data['department'] = $department;
+            }
+
+            if( insert( $inserting_data, 'sms_registration' ) ) {
                 $output['success'] = true;
                 $output['message'] = "Successfully registered a new account.";
             } else {

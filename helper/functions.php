@@ -32,6 +32,14 @@ $pathInPieces = explode('/', $_SERVER['DOCUMENT_ROOT']);
 define( 'ROOT', $pathInPieces[0] );
 define( 'PROJECT_TITLE', 'Student Management System' );
 
+function validate( $string ) {
+    global $mysqli;
+    $string = htmlspecialchars( $string );
+    $string = trim( $string );
+    $string = mysqli_real_escape_string( $mysqli, $string );
+    return $string;
+}
+
 // Registration funciton 
 function insert ( $data, $table_name ) {
 
