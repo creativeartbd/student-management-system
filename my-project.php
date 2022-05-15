@@ -16,7 +16,7 @@ check_user_login_status();
             </h3>
           </div>
           <div class="row">
-            <div class="col-md-6 col-sm-12 grid-margin stretch-card">
+            <div class="col-md-8 col-sm-12 grid-margin stretch-card">
                 <div class="card">
                     <div class="card-body">
                         <?php

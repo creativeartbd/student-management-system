@@ -1,23 +1,7 @@
-<?php require_once 'helper/functions.php'; 
+<?php 
+require_once 'partials/header.php'; 
 check_user_login_status();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Student Project Management System</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href="<?php echo ROOT; ?>assets/vendors/mdi/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="<?php echo ROOT; ?>assets/vendors/css/vendor.bundle.base.css">
-    <!-- endinject -->
-    <!-- Layout styles -->
-    <link rel="stylesheet" href="<?php echo ROOT; ?>assets/css/style.css">
-    <!-- End layout styles -->
-    <link rel="shortcut icon" href="<?php echo ROOT; ?>assets/images/favicon.ico" />
-  </head>
-  <body>
     <div class="container-scroller">
       <?php require_once 'partials/top-header.php'?>
       <div class="container-fluid page-body-wrapper">
@@ -45,7 +29,6 @@ check_user_login_status();
                             <th> Roll/Batch/Department</th>
                             <th> Project </th>
                             <th> Approve </th>
-                            <th> Status </th>
                             <th> Action </th>
                           </tr>
                         </thead>
@@ -53,7 +36,9 @@ check_user_login_status();
                             <?php
                             $get_all_projects = "SELECT r.st_id, r.roll, r.batch, r.department, r.fname, r.lname, r.email, r.profile_pic, p.project_file, p.edited_count, p.username, p.is_approved FROM sms_projects AS p LEFT JOIN sms_registration AS r ON r.username = p.username ";
                             $get_all_projects_query = mysqli_query( $mysqli, $get_all_projects ); 
-
+                            if( 0 == mysqli_num_rows( $get_all_projects_query ) ) {
+                              echo "<div class='alert alert-warning'>No data found.</div>";
+                            }
                             while( $get_all_projects_results = mysqli_fetch_array( $get_all_projects_query ) ) {
 
                               $fname = $get_all_projects_results['fname'];
@@ -83,18 +68,29 @@ check_user_login_status();
                               ?>
                           <tr>
                             <td class="py-1">
-                              <img src="assets/images/profile/<?php echo $profile_pic; ?>" alt="image" />
+                              <?php
+                              if( empty( $profile_pic ) ) {
+                                echo '<i class="mdi mdi-face-profile mdi-48px menu-icon"></i>';
+                              } else {
+                                echo "<img src='assets/images/profile/$profile_pic' alt='image' />";
+                              }
+                              ?>
                             </td>
                             <td><?php echo $fname . ' ' . $lname; ?></td>
                             <td><?php if( !empty( $roll ) && !empty( $batch) && !empty( $department ) ) { echo $roll . ' <br/> '.$batch.' <br/> '.$department; } ?></td>
                             <td><a class="btn btn-gradient-info btn-sm" href="download.php?file=<?php echo urlencode( $project_file ); ?>">Download <i class="mdi mdi-eye menu-icon"></i></a></td>
-                            <td><a data-username="<?php echo $p_username;  ?>" href="#" class="btn btn-gradient-success btn-sm approve_project" data-bs-toggle="modal" data-bs-target="#exampleModal">Approve Project</a></td>
-                            <td><?php echo $status; ?></td>
+                            <td>
+                              <?php if( 0 == $is_approved ) : ?>
+                              <a data-username="<?php echo $p_username;  ?>" href="#" class="btn btn-gradient-danger btn-sm approve_project" data-bs-toggle="modal" data-bs-target="#exampleModal">Approve Project</a>
+                              <?php else : ?>
+                                <span class="btn btn-gradient-success btn-sm" >Approved</span>
+                              <?php endif; ?>
+                            </td>
                             <td>
                               <?php if( $is_approved == 1 ) : ?>
-                                <a class="btn btn-gradient-danger btn-sm" href="set-goal.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Set Goal</a>
+                                <a class="btn btn-gradient-success btn-sm" href="set-goal.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Set Goal</a>
                               <?php else : ?>
-                                <a class="btn btn-gradient-danger btn-sm" href="#">...</a>
+                                <a class="btn btn-gradient-info btn-sm" href="#">N/A</a>
                               <?php endif; ?>
                             </td>
                           </tr>

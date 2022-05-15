@@ -21,7 +21,7 @@ check_user_login_status();
                     <div class="card-body">
                     <?php
                     $st_id = $_SESSION['st_id'];
-                    $get_goal_query = mysqli_query( $mysqli, "SELECT * FROM sms_goal WHERE goal_to = '$st_id' ");
+                    $get_goal_query = mysqli_query( $mysqli, "SELECT sg.*, sga.goal_file FROM sms_goal AS sg LEFT JOIN sms_goal_answer AS sga ON sga.goal_id = sg.goal_id WHERE sg.goal_to = '$st_id' ");
                     if( mysqli_num_rows( $get_goal_query ) > 0 ) {
                         echo "<table class='table'>";
                             echo '<tr>';
@@ -36,16 +36,30 @@ check_user_login_status();
                             $goal_id = $get_goal_result['goal_id'];
                             $goal_title = $get_goal_result['goal_title'];
                             $goal_send = $get_goal_result['goal_send'];
+                            $is_goal_approve = $get_goal_result['is_goal_approve'];
+                            $goal_file = $get_goal_result['goal_file'];
+                            if( !empty( $goal_file ) ) {
+                              $is_answered = "<span class='btn btn-gradient-success btn-sm'>Answered</span>";
+                            } else {
+                              $is_answered = "<span class='btn btn-gradient-danger btn-sm'>Answer</span>";
+                            }
+                            if( 0 == $is_goal_approve ) {
+                              $status = "<span class='btn btn-gradient-danger btn-sm'>No Approved</span>";
+                            } else {
+                              $status = "<span class='btn btn-gradient-success btn-sm'>Approved</span>";
+                            }
                             echo '<tr>';
                                 echo "<td>$count</td>";
                                 echo "<td>$goal_title</td>";
                                 echo "<td>$goal_send</td>";
-                                echo "<td><a href='#' data-goal-id='$goal_id' data-bs-toggle='modal' data-bs-target='#exampleModal' class='btn btn-gradient-danger btn-sm goal_answer'>Answer</a></td>";
-                                echo "<td></td>";
+                                echo "<td><a href='#' data-goal-id='$goal_id' data-bs-toggle='modal' data-bs-target='#exampleModal' class='goal_answer'>$is_answered</a></td>";
+                                echo "<td>$status</td>";
                             echo '</tr>';
                             $count++;
                         }
                         echo "</table>";
+                    } else {
+                        echo "<div class='alert alert-warning'>Currenlty, You don't have any project goal.</div>";
                     }
                     ?>
                     </div>

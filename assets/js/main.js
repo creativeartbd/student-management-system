@@ -58,6 +58,11 @@
                                 window.location = data.redirect;
                             }, 3000);
                         }
+                        if( data.reload ) {
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 3000);
+                        }
                     }
                 }
             });

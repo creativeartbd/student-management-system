@@ -26,21 +26,24 @@ check_user_login_status();
           <div class="content-wrapper">
             <div class="page-header">
               <h3 class="page-title">
+                <?php
+                $username = htmlspecialchars( $_GET['username'] );
+                $st_id = (int) htmlspecialchars($_GET['st_id'] );
+                $st_type = (int) $_SESSION['login_type'];
+                $get_all_goal = mysqli_query( $mysqli, "SELECT sga.goal_file, sga.st_id, sg.* FROM sms_goal as sg LEFT JOIN sms_goal_answer as sga ON sg.goal_id = sga.goal_id WHERE sga.st_id = '$st_id' ");
+                $found_row = mysqli_num_rows( $get_all_goal );
+                $get_username = htmlspecialchars( $_GET['username'] );
+                ?>
                 <span class="page-title-icon bg-gradient-primary text-white me-2">
                   <i class="mdi mdi-home"></i>
-                </span> Project Goal
+                </span>Set the project goal for: <?php echo ucfirst( $get_username ); ?>
               </h3>
             </div>
             <div class="row">
               <div class="col-md-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <?php
-                    $username = htmlspecialchars( $_GET['username'] );
-                    $st_id = (int) htmlspecialchars($_GET['st_id'] );
-                    $st_type = (int) $_SESSION['login_type'];
-                    $get_all_goal = mysqli_query( $mysqli, "SELECT sga.goal_file, sga.st_id, sg.* FROM sms_goal as sg LEFT JOIN sms_goal_answer as sga ON sg.goal_id = sga.goal_id WHERE sga.st_id = '$st_id' ");
-                    ?>
+                    
                     <h4 class="card-title">Set the project goal</h4>
                     <form action="" method="POST" id="form" enctype="multipart/form-data">
                         <div class="form-group">
@@ -61,22 +64,33 @@ check_user_login_status();
                 <div class="card">
                   <div class="card-body">
                     <h4 class="card-title">Al Goal </h4>
+                    <?php if( 0 ==  $found_row ) : ?>
+                      <div class="alert alert-warning">No data found.</div>
+                    <?php endif; ?>
                     <table class="table">
                       <tr>
                         <th>Goal Title</th>
                         <th>File</th>
                         <th>Action</th>
                       </tr>
-                      <?php while( $goal_result = mysqli_fetch_array( $get_all_goal ) ) :
+                      <?php 
+                      while( $goal_result = mysqli_fetch_array( $get_all_goal ) ) :
                         $goal_id = $goal_result['goal_id']; 
                         $goal_title = $goal_result['goal_title'];  
+                        $is_goal_end = $goal_result['is_goal_end'];  
+                        $is_goal_approve = $goal_result['is_goal_approve'];  
                         $goal_file = unserialize( $goal_result['goal_file'] );  
                         $st_id = (int) $goal_result['st_id'];  
+                        if( 1 == $is_goal_end && 1 == $is_goal_approve ) {
+                          $approve_status = "<span class='btn btn-gradient-success btn-sm'>Approved</span>";
+                        } else {
+                          $approve_status = "<span class='btn btn-gradient-danger btn-sm'>Not Approved</span>";
+                        }
                       ?>
                       <tr>
                         <td><?php echo $goal_result['goal_title']; ?></td>
                         <td><a class="btn btn-gradient-info btn-sm" href="download.php?file=<?php echo urlencode( $goal_file ); ?>">Download <i class="mdi mdi-eye menu-icon"></i></a></td>
-                        <td><a data-goal-id="<?php echo $goal_id; ?>" data-st-id="<?php echo $st_id; ?>" href="#" class="btn btn-gradient-success btn-sm approve_goal" data-bs-toggle="modal" data-bs-target="#exampleModal">Approve Project</a></td>
+                        <td><a data-goal-id="<?php echo $goal_id; ?>" data-st-id="<?php echo $st_id; ?>" href="#" class="approve_goal" data-bs-toggle="modal" data-bs-target="#exampleModal"><?php echo $approve_status; ?></a></td>
                       </tr>
                       <?php endwhile; ?>
                     </table>

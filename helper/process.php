@@ -3,12 +3,14 @@ require_once 'functions.php';
 
 // process approve goal 
 if( isset( $_POST['form']) && $_POST['form'] == 'approve_goal' ) {
+
     $st_id = (int) htmlspecialchars( $_POST['st_id'] );
     $goal_id = (int) htmlspecialchars( $_POST['goal_id'] );
 
     // Hold all errors
     $output['message'] = [];
     $output['success'] = false;
+    $output['reload'] = true;
 
     if( isset( $st_id) && isset( $goal_id ) ) {
         if( empty( $st_id ) ) {
@@ -20,13 +22,14 @@ if( isset( $_POST['form']) && $_POST['form'] == 'approve_goal' ) {
     }
 
     if( empty( $output['message'] ) ) {
-        $update_goal = mysqli_query( $mysqli, "UPDATE sms_gola SET is_goal_end = 1, is_goal_approve = 1 WHERE goal_id = '$goal_id' AND goal_to = '$st_id' ");
+        $output['success'][] = false;
+        $update_goal = mysqli_query( $mysqli, "UPDATE sms_goal SET is_goal_end = 1, is_goal_approve = 1 WHERE goal_id = '$goal_id' AND goal_to = '$st_id' ");
         if( $update_goal ) {
-            $output['success'] = true;
-            $output['message'] = "Successfully approved the goal.";
+            $output['success'][] = true;
+            $output['message'][] = "Successfully approved the goal.";
         } else {
-            $output['success'] = false;
-            $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+            $output['success'][] = false;
+            $output['message'][] = "Opps! Something wen't wrong! Please contact administrator.";
         }
     }
 
@@ -56,6 +59,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
     // Hold all errors
     $output['message'] = [];
     $output['success'] = false;
+    $output['reload'] = true;
 
     if( isset( $goal_reply ) && isset( $file_name ) ) {
         if( empty( $goal_reply ) && empty( $file_name ) ) {
@@ -159,7 +163,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'setgoal' ) {
     }
 }
 
-// Process project approve form 
+// Process project approve project 
 if( isset( $_POST['form']) && $_POST['form'] == 'approve_project' ) {
     
     $student_username = htmlspecialchars(trim($_POST['student_username']));
@@ -171,6 +175,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'approve_project' ) {
     // Hold all errors
     $output['message'] = [];
     $output['success'] = false;
+    $output['reload'] = true;
 
     if( isset( $student_username ) ) {
         if( empty( $student_username ) ) {
