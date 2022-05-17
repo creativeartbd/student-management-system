@@ -37,6 +37,7 @@ check_user_login_status();
                             $get_all_projects = "SELECT r.st_id, r.roll, r.batch, r.department, r.fname, r.lname, r.email, r.profile_pic, p.project_file, p.edited_count, p.username, p.is_approved, p.approved_by, p.supervisor FROM sms_projects AS p LEFT JOIN sms_registration AS r ON r.username = p.username ";
                             $get_all_projects_query = mysqli_query( $mysqli, $get_all_projects ); 
                             $username = $_SESSION['username'];
+                            $st_ses_id = (int) $_SESSION['st_id'];
 
                             if( 0 == mysqli_num_rows( $get_all_projects_query ) ) {
                               echo "<div class='alert alert-warning'>No data found.</div>";
@@ -57,6 +58,7 @@ check_user_login_status();
                               $batch = $get_all_projects_results['batch'];
                               $department = $get_all_projects_results['department'];
                               $approved_by = $get_all_projects_results['approved_by'];
+                              $supervisor = $get_all_projects_results['supervisor'];
                               $class_name = '';
                               
                               if( $edited_count >= 3 ) {
@@ -92,7 +94,7 @@ check_user_login_status();
                             <td>
                               <?php if( $is_approved == 1 ) : ?>
                                 <a class="btn btn-gradient-success btn-sm" href="set-goal.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Set Goal</a>
-                                <?php if( $approved_by == $username ) : ?>
+                                <?php if( $approved_by == $username || $supervisor == $st_ses_id ) : ?>
                                 <a class="btn btn-gradient-info btn-sm" href="edit-student-project.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Edit</a>
                                 <?php endif; ?>
                               <?php else : ?>
@@ -121,8 +123,7 @@ check_user_login_status();
                   <div class="result"></div>
                   <h4 class="text text-danger">Are you sure to approve this project?<h4>
                   <?php
-                  $st_id = (int) $_SESSION['st_id'];
-                  $get_teacer = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration WHERE st_type = 2 AND st_id != '$st_id' ");
+                  $get_teacer = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration WHERE st_type = 2 AND st_id != '$st_ses_id' ");
                   
                   ?>
                   <form class="pt-3" id="form" method="POST" action="">

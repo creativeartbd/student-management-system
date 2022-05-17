@@ -284,6 +284,11 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject_by_teacher' ) {
         }
     }
 
+    $do_validation = true;
+    if( $supervisor == $_SESSION['st_id'] ) {
+        $do_validation = false;
+    }
+
     $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
 
     if( isset( $_FILES['pfile']['name'] ) ) {
@@ -313,74 +318,89 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject_by_teacher' ) {
         if( empty( $ptitle ) && empty( $pdes ) && empty( $group_members_arr ) && empty( $supervisor ) ) {
             $output['message'][] = 'All fields is required';
         } else {
-            // validate project title
-            if( empty( $ptitle ) ) {
-                $output['message'][] = 'Project title is required.';
-            } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $ptitle) ) {
-                $output['message'][] = 'Project title should contain only alpha numeric characters.';
-            } elseif( strlen( $ptitle ) > 255 || strlen( $ptitle ) < 10 ) {
-                $output['message'][] = 'Project title length should be between 10-255 characters long.';
-            }
-            // validate project description
-            if( empty( $pdes ) ) {
-                $output['message'][] = 'Project description is required';
-            } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $pdes) ) {
-                $output['message'][] = 'Project description should contain only alpha numeric characters.';
-            } elseif( strlen( $pdes ) > 5000 ) {
-                $output['message'][] = 'Project description length should be less than 5000 characters long.';
-            }
-            // Validate project file
-            if( ! empty( $file_name) ) {
-                if ( ! in_array( $extension, $allowed_extension ) ) {
-                    $output['message'][] = 'Uploaded file type is not allowed. We are currently allowing ' . implode(', ', $allowed_extension )  .' filetype';
-                } elseif( $file_size > $allowed_file_size ) {
-                    $output['message'][] = 'Your uploaded file size must be less than 5 MB';
+
+            // Only teacher can update not supervisor
+            if( $do_validation ) {
+                // validate project title
+                if( empty( $ptitle ) ) {
+                    $output['message'][] = 'Project title is required.';
+                } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $ptitle) ) {
+                    $output['message'][] = 'Project title should contain only alpha numeric characters.';
+                } elseif( strlen( $ptitle ) > 255 || strlen( $ptitle ) < 10 ) {
+                    $output['message'][] = 'Project title length should be between 10-255 characters long.';
+                }
+                // validate project description
+                if( empty( $pdes ) ) {
+                    $output['message'][] = 'Project description is required';
+                } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $pdes) ) {
+                    $output['message'][] = 'Project description should contain only alpha numeric characters.';
+                } elseif( strlen( $pdes ) > 5000 ) {
+                    $output['message'][] = 'Project description length should be less than 5000 characters long.';
+                }
+                // Validate project file
+                if( ! empty( $file_name) ) {
+                    if ( ! in_array( $extension, $allowed_extension ) ) {
+                        $output['message'][] = 'Uploaded file type is not allowed. We are currently allowing ' . implode(', ', $allowed_extension )  .' filetype';
+                    } elseif( $file_size > $allowed_file_size ) {
+                        $output['message'][] = 'Your uploaded file size must be less than 5 MB';
+                    }
                 }
             }
+            
             // validate group members
             if( empty( $group_members ) ) {
                 $output['message'][] = 'Please choose your group members. You can choose upto 10 members.';
             } elseif( !preg_grep('/^[0-9\d]+$/', $group_members_arr) ) {
                 $output['message'][] = 'Invalid group member is given.';
             } 
-            // validate supervisor
-            if( empty( $supervisor ) ) {
-                $output['message'][] = 'Supervisor is required.';
+
+            if( $do_validation ) {
+                // validate supervisor
+                if( empty( $supervisor ) ) {
+                    $output['message'][] = 'Supervisor is required.';
+                }
             }
+            
         }
 
         if( empty( $output['message'] ) ) {
 
-            $updating_data = [ 
-                'project_title' => $ptitle, 
-                'project_description' => $pdes, 
-                'username' => $username, 
-                'supervisor' => $supervisor
-            ];
+            // On teacher can update
+            if( $do_validation ) {
+                
+                $updating_data = [ 
+                    'project_title' => $ptitle, 
+                    'project_description' => $pdes, 
+                    'username' => $username, 
+                    'supervisor' => $supervisor
+                ];
+        
+                if( ! empty( $file_name ) ) { 
+                    if( move_uploaded_file($file_tmp_name, '../assets/images/projects/'.$new_file_name) ) {
+                        $updating_data['project_file'] = serialize($new_file_name);
+                    } else {
+                        $output['success'] = false;
+                        $output['message'] = "Opps! Your project file is not uploading! Please contact administrator.";
+                    } 
+                }
 
-            if( ! empty( $file_name ) ) { 
-                if( move_uploaded_file($file_tmp_name, '../assets/images/projects/'.$new_file_name) ) {
-                    $updating_data['project_file'] = serialize($new_file_name);
+                $update = update( 'sms_projects', $updating_data,  [ 
+                    'username' => $username, 
+                ] );
+
+        
+                $group_members_arr[] = $st_id;
+                $group_members = serialize( $group_members_arr );
+                
+                if( $update ) {
+                    $output['success'] = true;
+                    $output['message'] = "Successfully updated the project.";
                 } else {
                     $output['success'] = false;
-                    $output['message'] = "Opps! Your project file is not uploading! Please contact administrator.";
-                } 
-            }
+                    $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
+                }
 
-            $update = update( 'sms_projects', $updating_data,  [ 
-                'username' => $username, 
-            ] );
-
-            $group_members_arr[] = $st_id;
-            $group_members = serialize( $group_members_arr );
-
-            if( $update ) {
-                $output['success'] = true;
-                $output['message'] = "Successfully updated the project.";
-            } else {
-                $output['success'] = false;
-                $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
-            }
+            }   
 
             $sql_update = "UPDATE sms_projects SET edited_count = edited_count + 1 WHERE username = '$username'";
             $sql_query = mysqli_query($mysqli, $sql_update);
@@ -396,6 +416,13 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject_by_teacher' ) {
                 $output['success'] = false;
                 $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
             }
+
+            if( ! $do_validation ) {
+                if( $update_members ) {
+                    $output['success'] = true;
+                    $output['message'] = "Successfully updated the project.";
+                }
+            }   
 
             $diffs = array_diff( $ex_members, $group_members_arr ) ;
 

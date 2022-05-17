@@ -43,25 +43,35 @@ check_user_login_status();
                         } else {
                           $time_level = ' times';
                         }
+
+                        $disabled = '';
+                        if( $supervisor == $_SESSION['st_id'] ) {
+                          $disabled = 'readonly';
+                        }
                         ?>
                         
                         <h4 class="card-title">Update your project.</h4>
                         <form class="pt-3" id="form" method="POST" action="" enctype="multipart/form-data">
                             <div class="form-group">
-                                <input type="text" value="<?php echo $project_title; ?>" class="form-control form-control-lg" placeholder="Project Title" name="ptitle">
+                                <input type="text" <?php echo $disabled; ?> value="<?php echo $project_title; ?>" class="form-control form-control-lg" placeholder="Project Title" name="ptitle">
                             </div>
                             <div class="form-group">
-                                <textarea name="pdes" id="" cols="30" rows="5" class="form-conrol form-control-lg textarea" placeholder="Project Description"><?php echo $project_description; ?></textarea>
+                                <textarea name="pdes" <?php echo $disabled; ?> id="" cols="30" rows="5" class="form-conrol form-control-lg textarea" placeholder="Project Description"><?php echo $project_description; ?></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Your uploaded project file</label>
+                                <label>Uploaded project file</label>
                                 <?php
-                                echo '<p><a href="download.php?file=' . urlencode($project_file) . '">Download Your Project</a></p>';
+                                if( $supervisor !== $_SESSION['st_id'] ) {
+                                  echo '<p class="text text-danger">You don\'t have permission.</p>';
+                                } else {
+                                  echo '<p><a href="download.php?file=' . urlencode($project_file) . '">Download Your Project</a></p>';
+                                }
+                                
                                 ?>
                             </div>
                             <div class="form-group">
                                 <label>Upload/Change Project File</label>
-                                <input type="file" class="form-control form-control-lg" name="pfile">
+                                <input  <?php echo $disabled; ?> type="file" class="form-control form-control-lg" name="pfile">
                             </div>
                             <div class="form-group group-member">
                               <label><b>Choose group member</b></label>
@@ -110,7 +120,7 @@ check_user_login_status();
 
                                 echo '<div class="form-check form-check-success">';
                                   echo '<label class="form-check-label">';
-                                    echo "<input type='radio' $checked class='form-check-input' name='supervisor' value='$teacher_id'> ".ucfirst( $fname ) . ' ' . ucfirst( $lname );
+                                    echo "<input $disabled type='radio' $checked class='form-check-input' name='supervisor' value='$teacher_id'> ".ucfirst( $fname ) . ' ' . ucfirst( $lname );
                                   echo '<i class="input-helper"></i></label>';
                                 echo '</div>';
                               }
@@ -122,6 +132,7 @@ check_user_login_status();
                                 <input type="hidden" name="st_id" value=<?php echo $st_id; ?>>
                                 <input type="hidden" name="login_type" value=<?php echo $st_type; ?>>
                                 <input type="hidden" name="username" value=<?php echo $username; ?>>
+                                <input type="hidden" name="supervisor" value=<?php echo $supervisor; ?>>
                                 <input type="hidden" name="form" value="updateproject_by_teacher">
                                 <input type="submit" value="Update Project" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                             </div>
