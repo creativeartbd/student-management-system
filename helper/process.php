@@ -366,6 +366,10 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject_by_teacher' ) {
         if( empty( $output['message'] ) ) {
 
             // On teacher can update
+
+            $group_members_arr[] = $st_id;
+            $group_members = serialize( $group_members_arr );
+
             if( $do_validation ) {
                 
                 $updating_data = [ 
@@ -387,10 +391,6 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject_by_teacher' ) {
                 $update = update( 'sms_projects', $updating_data,  [ 
                     'username' => $username, 
                 ] );
-
-        
-                $group_members_arr[] = $st_id;
-                $group_members = serialize( $group_members_arr );
                 
                 if( $update ) {
                     $output['success'] = true;

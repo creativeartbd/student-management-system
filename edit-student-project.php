@@ -35,7 +35,7 @@ check_user_login_status();
                         $uploaded_time = $result['uploaded_time'];
                         $edited_count = $result['edited_count'];
                         $is_approved = $result['is_approved'];
-                        $supervisor = $result['supervisor'];
+                        $res_supervisor = $result['supervisor'];
                         $time_left =  3 - $edited_count;
 
                         if( $time_left == 1 ) {
@@ -45,7 +45,7 @@ check_user_login_status();
                         }
 
                         $disabled = '';
-                        if( $supervisor == $_SESSION['st_id'] ) {
+                        if( $res_supervisor == $_SESSION['st_id'] ) {
                           $disabled = 'readonly';
                         }
                         ?>
@@ -61,7 +61,7 @@ check_user_login_status();
                             <div class="form-group">
                                 <label>Uploaded project file</label>
                                 <?php
-                                if( $supervisor !== $_SESSION['st_id'] ) {
+                                if( $res_supervisor == $_SESSION['st_id'] ) {
                                   echo '<p class="text text-danger">You don\'t have permission.</p>';
                                 } else {
                                   echo '<p><a href="download.php?file=' . urlencode($project_file) . '">Download Your Project</a></p>';
@@ -79,10 +79,21 @@ check_user_login_status();
                                 $get_all_student = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration WHERE st_type = 1 AND st_id != '$st_id' " );
                                 
                                 $get_group_members = mysqli_query( $mysqli, "SELECT * FROM sms_group WHERE st_id = '$st_id' ");
-                                $result_group_members = mysqli_fetch_array( $get_group_members );
-                                $group_members = unserialize( $result_group_members['group_members'] );
-                                $g_id = (int) $result_group_members['g_id'];
+                                $found_group_members = mysqli_num_rows( $get_group_members );
                                 
+                                $group_members = [];
+                                $g_id = 0;
+                                if( $found_group_members > 0 ) {
+                                  $result_group_members = mysqli_fetch_array( $get_group_members, MYSQLI_ASSOC );
+                                  $group_members = $result_group_members['group_members'];
+                                  if( !empty( $group_members ) ) {
+                                    $group_members = unserialize( $group_members );
+                                  } else {
+                                    $group_members = [];
+                                  }
+                                  $g_id = (int) $result_group_members['g_id'];
+                                }
+                          
                                 while( $get_all_student_result = mysqli_fetch_array( $get_all_student, MYSQLI_ASSOC ) ) {
                                  
                                   $fname = $get_all_student_result['fname'];
@@ -105,7 +116,7 @@ check_user_login_status();
                               <label><b>Choose Supervisor</b></label>
                               <?php
                               $teacher_ses_id = $_SESSION['st_id'];
-                              $get_teacher = mysqli_query( $mysqli, "SELECT username, fname, lname, st_id FROM sms_registration WHERE st_type = 2 AND st_id != '$teacher_ses_id' "); 
+                              $get_teacher = mysqli_query( $mysqli, "SELECT username, fname, lname, st_id FROM sms_registration WHERE st_type = 2 "); 
                               
                               while( $result_teacher = mysqli_fetch_array( $get_teacher, MYSQLI_ASSOC ) ) {
                                 
@@ -114,7 +125,7 @@ check_user_login_status();
                                 $teacher_id = $result_teacher['st_id'];
                                 
                                 $checked = '';
-                                if( $teacher_id == $supervisor ) {
+                                if( $teacher_id == $res_supervisor ) {
                                   $checked = 'checked';
                                 }
 
@@ -132,7 +143,7 @@ check_user_login_status();
                                 <input type="hidden" name="st_id" value=<?php echo $st_id; ?>>
                                 <input type="hidden" name="login_type" value=<?php echo $st_type; ?>>
                                 <input type="hidden" name="username" value=<?php echo $username; ?>>
-                                <input type="hidden" name="supervisor" value=<?php echo $supervisor; ?>>
+                                <input type="hidden" name="supervisor" value=<?php echo $res_supervisor; ?>>
                                 <input type="hidden" name="form" value="updateproject_by_teacher">
                                 <input type="submit" value="Update Project" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                             </div>
