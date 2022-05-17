@@ -35,11 +35,16 @@
                         <input type="email" class="form-control form-control-lg" placeholder="Email Address" name="email">
                       </div>
                       <div class="form-group">
-                        <select name="registration_type" class="form-control form-control-lg registration_type">
-                            <option value="">--Select Registration Type--</option>
-                            <option value="1">As Student</option>
-                            <option value="2">As Teacher</option>
-                        </select>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input type="radio" class="form-check-input registration_type" name="registration_type" id="registration_type" value="1"> Student <i class="input-helper"></i>
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input type="radio" class="form-check-input registration_type" name="registration_type" id="registration_type" value="2"> Teacher <i class="input-helper"></i>
+                          </label>
+                        </div>
                       </div>
                       <div class="hide_me">
                         <div class="form-group">

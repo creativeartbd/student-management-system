@@ -6,19 +6,23 @@
             var data = {
                 form : 'getchat'
             }
-            $.ajax({
-                dataType: "html",
-                type: "POST",
-                url: 'helper/process.php',
-                data : data,
-                success: function(data) {
-                    $(".all-message").html(data);
-                },
-                complete: function() {
-                // Schedule the next request when the current one's complete
-                setTimeout(worker, 1000);
-                }
-            });
+            var current_url = window.location.pathname.split("/").pop();
+            console.log( current_url );
+            if( 'chat.php' == current_url ) {
+                $.ajax({
+                    dataType: "html",
+                    type: "POST",
+                    url: 'helper/process.php',
+                    data : data,
+                    success: function(data) {
+                        $(".all-message").html(data);
+                    },
+                    complete: function() {
+                    // Schedule the next request when the current one's complete
+                    setTimeout(worker, 1000);
+                    }
+                });
+            }
         })();
 
           

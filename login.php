@@ -42,11 +42,16 @@
                         <input type="password" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Password" name="password">
                       </div>
                       <div class="form-group">
-                        <select name="login_type" class="form-control form-control-lg">
-                            <option value="">-- Login As --</option>
-                            <option value="1">Student</option>
-                            <option value="2">Teacher</option>
-                        </select>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input type="radio" class="form-check-input" name="login_type" id="login_type" value="1"> Student <i class="input-helper"></i>
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input type="radio" class="form-check-input" name="login_type" id="login_type" value="2"> Teacher <i class="input-helper"></i>
+                          </label>
+                        </div>
                       </div>
                       <div class="form-group"><div class="result"></div></div>
                       <div class="mt-3">

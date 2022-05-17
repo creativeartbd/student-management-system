@@ -34,8 +34,10 @@ check_user_login_status();
                         </thead>
                         <tbody>
                             <?php
-                            $get_all_projects = "SELECT r.st_id, r.roll, r.batch, r.department, r.fname, r.lname, r.email, r.profile_pic, p.project_file, p.edited_count, p.username, p.is_approved FROM sms_projects AS p LEFT JOIN sms_registration AS r ON r.username = p.username ";
+                            $get_all_projects = "SELECT r.st_id, r.roll, r.batch, r.department, r.fname, r.lname, r.email, r.profile_pic, p.project_file, p.edited_count, p.username, p.is_approved, p.approved_by, p.supervisor FROM sms_projects AS p LEFT JOIN sms_registration AS r ON r.username = p.username ";
                             $get_all_projects_query = mysqli_query( $mysqli, $get_all_projects ); 
+                            $username = $_SESSION['username'];
+
                             if( 0 == mysqli_num_rows( $get_all_projects_query ) ) {
                               echo "<div class='alert alert-warning'>No data found.</div>";
                             }
@@ -54,6 +56,7 @@ check_user_login_status();
                               $roll = $get_all_projects_results['roll'];
                               $batch = $get_all_projects_results['batch'];
                               $department = $get_all_projects_results['department'];
+                              $approved_by = $get_all_projects_results['approved_by'];
                               $class_name = '';
                               
                               if( $edited_count >= 3 ) {
@@ -89,6 +92,9 @@ check_user_login_status();
                             <td>
                               <?php if( $is_approved == 1 ) : ?>
                                 <a class="btn btn-gradient-success btn-sm" href="set-goal.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Set Goal</a>
+                                <?php if( $approved_by == $username ) : ?>
+                                <a class="btn btn-gradient-info btn-sm" href="edit-student-project.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Edit</a>
+                                <?php endif; ?>
                               <?php else : ?>
                                 <a class="btn btn-gradient-info btn-sm" href="#">N/A</a>
                               <?php endif; ?>
@@ -114,14 +120,30 @@ check_user_login_status();
                 <div class="modal-body">
                   <div class="result"></div>
                   <h4 class="text text-danger">Are you sure to approve this project?<h4>
-                </div>
-                <div class="modal-footer">
-                  <form action="" id="form" method="POST">
-                    <input type="hidden" name="form" value="approve_project">
-                    <input type="hidden" class="set_username" name="student_username">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-                    <input type="submit" name="submit" value="Yes, I am Sure!" class="btn btn-success ajax-btn">
-                  </form>
+                  <?php
+                  $st_id = (int) $_SESSION['st_id'];
+                  $get_teacer = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration WHERE st_type = 2 AND st_id != '$st_id' ");
+                  
+                  ?>
+                  <form class="pt-3" id="form" method="POST" action="">
+                      <div class="form-group">
+                        <select name="supervisor" class="form-control form-control-lg">
+                          <option value="">--Select Superviosr</option>
+                          <?php
+                          while( $result_teacher = mysqli_fetch_array( $get_teacer, MYSQLI_ASSOC ) ) {
+                            $fname = $result_teacher['fname'];
+                            $lname = $result_teacher['lname'];
+                            $teacher_id = $result_teacher['st_id'];
+                            echo "<option value='$teacher_id'>$fname $lname</option>";
+                          }
+                          ?>
+                        </select>
+                      </div>
+                      <input type="hidden" name="form" value="approve_project">
+                      <input type="hidden" class="set_username" name="student_username">
+                      <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                      <input type="submit" name="submit" value="Yes, I am Sure!" class="btn btn-success ajax-btn">
+                    </form>
                 </div>
               </div>
             </div>
