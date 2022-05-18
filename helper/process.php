@@ -722,19 +722,28 @@ if( isset( $_POST['form']) && $_POST['form'] == 'submitproject' ) {
 // Process profile update form 
 if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
     
-    $fname = htmlspecialchars( $_POST['fname'] );
-    $lname = htmlspecialchars( $_POST['lname'] );
-    $password = htmlspecialchars( $_POST['password'] );
+    // get all form field value
+    $email = validate( $_POST['email'] );
+    $mobile = validate( $_POST['mobile'] );
+    $program = validate( $_POST['program'] );
+    $session = validate( $_POST['session'] );
+    $name = validate( $_POST['name'] );
+    $id = validate( $_POST['id'] );
+    $shift = validate( $_POST['shift'] );
+    $password = validate( $_POST['password'] );
     $hash_password = hash( 'sha512', $password );
-    $email = htmlspecialchars( $_POST['email'] );
+    $registration_type = isset( $_POST['registration_type'] ) ? validate( $_POST['registration_type'] ) : '';
+
     $username = $_SESSION['username'];
+    $st_type = (int) $_SESSION['login_type'];
+    $st_id = (int) $_SESSION['st_id'];
 
     $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
     if( isset( $_FILES['profile_pic']['name'] ) ) {
-        $file_name = htmlspecialchars( $_FILES['profile_pic']['name'] );
-        $file_tmp_name = htmlspecialchars( $_FILES['profile_pic']['tmp_name'] );
-        $file_size = htmlspecialchars( $_FILES['profile_pic']['size'] );
-        $file_type = htmlspecialchars( $_FILES['profile_pic']['type'] );
+        $file_name = validate( $_FILES['profile_pic']['name'] );
+        $file_tmp_name = validate( $_FILES['profile_pic']['tmp_name'] );
+        $file_size = validate( $_FILES['profile_pic']['size'] );
+        $file_type = validate( $_FILES['profile_pic']['type'] );
 
         $allowed_extension = [ 'jpg', 'jpeg', 'png', 'gif' ];
         $explode = explode( '.', $file_name );
@@ -742,9 +751,6 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
     }
     $allowed_file_size = 5000000; // 5 MB file size allowed
     $new_file_name = time().'.'.$extension;
-    
-    $username = $_SESSION['username'];
-    $st_type = $_SESSION['login_type'];
 
     // Hold all errors
     $output['message'] = [];
@@ -758,34 +764,10 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
         $found_email = mysqli_num_rows( $email_query );
     }
 
-    if( isset( $fname) && isset( $lname ) && isset( $password ) && isset( $email ) ) {
-        if( empty( $fname ) && empty( $lname ) && empty( $username ) && empty( $email ) ) {
+    if( isset( $email) && isset( $mobile ) && isset( $program) && isset( $session ) && isset( $name ) && isset( $id ) && isset( $shift ) && isset( $username) && isset( $password ) && isset( $registration_type ) ) {
+        if( empty( $email) && empty( $mobile ) && empty( $program) && empty( $session ) && empty( $name ) && empty( $id ) && empty( $shift ) && empty( $username) && empty( $password ) && empty( $registration_type ) ) {
             $output['message'][] = 'All fields is required';
         } else {
-            // validate first name
-            if( empty( $fname ) ) {
-                $output['message'][] = 'First name is required.';
-            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $fname) ) {
-                $output['message'][] = 'First name should contain only characters.';
-            } elseif( strlen( $fname ) > 20 || strlen( $fname ) < 2 ) {
-                $output['message'][] = 'First name length should be between 2-20 characters long.';
-            }
-            // validate last name
-            if( empty( $lname ) ) {
-                $output['message'][] = 'Last name is required';
-            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $lname) ) {
-                $output['message'][] = 'Last name should contain only characters.';
-            } elseif( strlen( $lname ) > 20 || strlen( $lname ) < 2 ) {
-                $output['message'][] = 'Last name length should be between 2-20 characters long.';
-            }
-            // validate password
-            if( !empty( $password ) ) {
-                if( empty( $password ) ) {
-                    $output['message'][] = 'Password is required.';
-                } elseif( strlen( $password ) < 6 ) {
-                    $output['message'][] = 'Password length should be at least 6 characters long.';
-                }
-            }
             // validate email
             if( empty( $email ) ) {
                 $output['message'][] = 'Email address is required.';
@@ -794,7 +776,50 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
             } elseif( $found_email == 1 ) {
                 $output['message'][] = 'Email address is already exist, Please choose another.';
             }
-
+            // validate mobile
+            if( empty( $mobile ) ) {
+                $output['message'][] = 'Mobile number is required.';
+            } elseif( ! preg_match( "/^[0-9]{11}$/", $mobile ) ) {
+                $output['message'][] = 'Invalid mobile number given. Number should be start with 0 and 11 characters length';
+            }
+            // validate program
+            if( empty( $program ) ) {
+                $output['message'][] = 'Program is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $program) ) {
+                $output['message'][] = 'Program should be contain only characters.';
+            } 
+            // validate session
+            if( empty( $session ) ) {
+                $output['message'][] = 'Session is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $session) ) {
+                $output['message'][] = 'Session should be contain only characters.';
+            } 
+            // validate name
+            if( empty( $name ) ) {
+                $output['message'][] = 'Your name is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $name) ) {
+                $output['message'][] = 'Your name should be contain only characters.';
+            } 
+            // validate ID
+            if( empty( $id ) ) {
+                $output['message'][] = 'Your ID is required.';
+            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $id) ) {
+                $output['message'][] = 'Your ID should be contain only alpha numeric characters.';
+            } 
+            // validate ID
+            if( empty( $shift ) ) {
+                $output['message'][] = 'Your shift is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $shift) ) {
+                $output['message'][] = 'Your shift name should be contain only characters.';
+            }
+            
+            // validate password
+            if( ! empty( $password ) ) {
+                if( strlen( $password ) < 6 ) {
+                    $output['message'][] = 'Password length should be at least 6 characters long.';
+                }
+            }
+           
             // Validate file upload
             if( ! empty( $file_name ) ) {
                 if( ! in_array( $extension, $allowed_extension ) ) {
@@ -808,9 +833,13 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
         if( empty( $output['message'] ) ) {
             // Upload the file to the directory
             $updating_data = [
-                'fname' =>  $fname, 
-                'lname' => $lname, 
-                'email' => $email,
+                'email' => $email, 
+                'mobile' => $mobile, 
+                'program' => $program, 
+                'session' => $session, 
+                'name' => $name,
+                'id' => $id,
+                'shift' => $shift,   
             ];
 
             if( !empty( $file_name ) ) {
@@ -818,9 +847,13 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
                     $updating_data['profile_pic'] = $new_file_name;
                 }
             }
+
+            if( !empty( $password ) ) {
+                $updating_data['password'] = $hash_password;
+            }
             
             $update = update('sms_registration', $updating_data,  [ 
-                'username' => $username, 
+                'st_id' => $st_id, 
                 'st_type' => $st_type 
             ] );
 

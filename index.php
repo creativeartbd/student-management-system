@@ -2,24 +2,72 @@
 require_once 'partials/header.php';
 check_user_login_status();
 ?>
-  <div class="container-scroller">
-    <?php require_once 'partials/top-header.php'?>
-    <div class="container-fluid page-body-wrapper">
-    <?php require_once 'partials/sidebar.php'?>
-      <div class="main-panel">
-        <div class="content-wrapper">
-          <div class="page-header">
-            <h3 class="page-title">
-              <span class="page-title-icon bg-gradient-primary text-white me-2">
-                <i class="mdi mdi-home"></i>
-              </span> Dashboard
-            </h3>
-          </div>
-          <div class="row">
-            <div class="col-md-12 grid-margin stretch-card">
-              <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quos illum ipsum voluptatem, ex magni reprehenderit, quo reiciendis repudiandae enim illo deleniti accusantium veniam, magnam tempore dolores unde cum fugit ea?</p>
+<div class="container-scroller">
+<?php require_once 'partials/top-header.php'?>
+<div class="container-fluid page-body-wrapper">
+<?php require_once 'partials/sidebar.php'?>
+<div class="main-panel">
+<div class="content-wrapper">
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+            <i class="mdi mdi-home"></i>
+            </span>Welcome to your dashboard <?php echo ucfirst( $_SESSION['username'] ); ?>
+        </h3>
+    </div>
+    <div class="row">
+        <div class="col-md-6 stretch-card grid-margin">
+            <div class="card bg-gradient-default card-img-holder p-3">
+                <div class="card-body">
+                    <h4 class="mb-3">Create a new group</h4>
+                    <form class="" id="form" method="POST" action="" enctype="multipart/form-data">
+                        <div class="form-group">
+                        <label for="">Choose Group Member</label>
+                            <?php 
+                            $st_id = (int) $_SESSION['st_id'];
+                            $get_members = mysqli_query( $mysqli, "SELECT name, st_id FROM sms_registration WHERE st_id != '$st_id' ");
+                            if( mysqli_num_rows( $get_members ) > 0 ) : ?>
+                                <?php while( $result = mysqli_fetch_array( $get_members, MYSQLI_ASSOC ) ) : 
+                                    $name = $result['name'];
+                                    $result_st_id = $result['st_id'];
+                                    ?>
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" value="<?php echo $result_st_id; ?>"> <?php echo $name; ?> <i class="input-helper"></i></label>
+                                    </div>
+                                <?php endwhile; ?>
+                            <?php endif; ?>
+                        </div>
+                        <div class="form-group">
+                            <div class="result"></div>
+                            <div class="form-group">
+                                <input type="hidden" name="form" value="create_group">
+                                <input type="submit" value="Create Group" class="btn btn-block btn-gradient-danger btn-lg font-weight-medium auth-form-btn ajax-btn">
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-          </div>
         </div>
-        <!-- content-wrapper ends -->
-        <?php require_once 'partials/footer.php'; ?>
+        <div class="col-md-6 stretch-card grid-margin">
+            <div class="card bg-gradient-success card-img-holder text-white">
+                <div class="card-body">
+                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image">
+                    <h4 class="font-weight-normal mb-3">Notification<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
+                    <h3 class="mb-5">Some notification will goes to here.</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 stretch-card grid-margin">
+            <div class="card bg-gradient-info card-img-holder text-white">
+                <div class="card-body">
+                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image">
+                    <h4 class="font-weight-normal mb-3">Project Progress<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
+                    <h3 class="mb-5">Some notification will goes to here.</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- content-wrapper ends -->
+<?php require_once 'partials/footer.php'; ?>

@@ -31,13 +31,13 @@
 											<input type="text" class="form-control form-control-lg" placeholder="Session" name="session">
 										</div>
 										<div class="form-group">
-											<input type="text" class="form-control form-control-lg" placeholder="Your name" name="name">
-										</div>
-										<div class="form-group">
 											<input type="text" class="form-control form-control-lg" placeholder="Your ID" name="id">
 										</div>
 										<div class="form-group">
 											<input type="text" class="form-control form-control-lg" placeholder="Your shift" name="shift">
+										</div>
+										<div class="form-group">
+											<input type="text" class="form-control form-control-lg" placeholder="Your name" name="name">
 										</div>
 										<div class="form-group">
 											<input type="text" class="form-control form-control-lg" placeholder="Username" name="username">
