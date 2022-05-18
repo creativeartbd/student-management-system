@@ -36,6 +36,7 @@ function validate( $string ) {
     global $mysqli;
     $string = htmlspecialchars( $string );
     $string = trim( $string );
+    $string = strip_tags( $string );
     $string = mysqli_real_escape_string( $mysqli, $string );
     return $string;
 }

@@ -840,9 +840,9 @@ if( isset( $_POST['form']) && $_POST['form'] == 'profile' ) {
 // Process login form 
 if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
     // get all form field value
-    $username = htmlspecialchars( $_POST['username'] );
-    $password = htmlspecialchars( $_POST['password'] );
-    $login_type = htmlspecialchars( $_POST['login_type'] );
+    $username = validate( $_POST['username'] );
+    $password = validate( $_POST['password'] );
+    $login_type = validate( $_POST['login_type'] );
     $hash_password = hash( 'sha512', $password );
     $status = '';
 
