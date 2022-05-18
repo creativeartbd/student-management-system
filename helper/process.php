@@ -902,16 +902,17 @@ if( isset( $_POST['form']) && $_POST['form'] == 'login' ) {
 // Process registration form 
 if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
     // get all form field value
-    $fname = validate( $_POST['fname'] );
-    $lname = htmlspecialchars( $_POST['lname'] );
-    $username = htmlspecialchars( $_POST['username'] );
-    $password = htmlspecialchars( $_POST['password'] );
+    $email = validate( $_POST['email'] );
+    $mobile = validate( $_POST['mobile'] );
+    $program = validate( $_POST['program'] );
+    $session = validate( $_POST['session'] );
+    $name = validate( $_POST['name'] );
+    $id = validate( $_POST['id'] );
+    $shift = validate( $_POST['shift'] );
+    $username = validate( $_POST['username'] );
+    $password = validate( $_POST['password'] );
     $hash_password = hash( 'sha512', $password );
-    $email = htmlspecialchars( $_POST['email'] );
-    $roll = htmlspecialchars( $_POST['roll'] );
-    $batch = htmlspecialchars( $_POST['batch'] );
-    $department = htmlspecialchars( $_POST['department'] );
-    $registration_type = htmlspecialchars( $_POST['registration_type'] );
+    $registration_type = isset( $_POST['registration_type'] ) ? validate( $_POST['registration_type'] ) : '';
     
     // Check existing user
     $found_username = '';
@@ -932,27 +933,56 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
     // Hold all errors
     $output['message'] = [];
     $output['success'] = false;
+    $output['redirect'] = 'login.php';
     
     // check existence
-    if( isset( $fname) && isset( $lname ) && isset( $username) && isset( $password ) && isset( $email ) && isset( $registration_type ) && isset( $roll ) && isset( $batch) && isset( $department ) ) {
-        if( empty( $fname ) && empty( $lname ) && empty( $username ) && empty( $password ) && empty( $email ) && empty( $registration_type ) && empty( $roll ) && empty( $batch ) && empty( $department ) ) {
+    if( isset( $email) && isset( $mobile ) && isset( $program) && isset( $session ) && isset( $name ) && isset( $id ) && isset( $shift ) && isset( $username) && isset( $password ) && isset( $registration_type ) ) {
+        if( empty( $email) && empty( $mobile ) && empty( $program) && empty( $session ) && empty( $name ) && empty( $id ) && empty( $shift ) && empty( $username) && empty( $password ) && empty( $registration_type ) ) {
             $output['message'][] = 'All fields is required';
         } else {
-            // validate first name
-            if( empty( $fname ) ) {
-                $output['message'][] = 'First name is required.';
-            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $fname) ) {
-                $output['message'][] = 'First name should contain only characters.';
-            } elseif( strlen( $fname ) > 20 || strlen( $fname ) < 2 ) {
-                $output['message'][] = 'First name length should be between 2-20 characters long.';
+            // validate email
+            if( empty( $email ) ) {
+                $output['message'][] = 'Email address is required.';
+            } elseif( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+                $output['message'][] = 'Email address is not correct.';
+            } elseif( $found_email == 1 ) {
+                $output['message'][] = 'Email address is already exist, Please choose another.';
             }
-            // validate last name
-            if( empty( $lname ) ) {
-                $output['message'][] = 'Last name is required';
-            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $lname) ) {
-                $output['message'][] = 'Last name should contain only characters.';
-            } elseif( strlen( $lname ) > 20 || strlen( $lname ) < 2 ) {
-                $output['message'][] = 'Last name length should be between 2-20 characters long.';
+            // validate mobile
+            if( empty( $mobile ) ) {
+                $output['message'][] = 'Mobile number is required.';
+            } elseif( ! preg_match( "/^[0-9]{11}$/", $mobile ) ) {
+                $output['message'][] = 'Invalid mobile number given. Number should be start with 0 and 11 characters length';
+            }
+            // validate program
+            if( empty( $program ) ) {
+                $output['message'][] = 'Program is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $program) ) {
+                $output['message'][] = 'Program should be contain only characters.';
+            } 
+            // validate session
+            if( empty( $session ) ) {
+                $output['message'][] = 'Session is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $session) ) {
+                $output['message'][] = 'Session should be contain only characters.';
+            } 
+            // validate name
+            if( empty( $name ) ) {
+                $output['message'][] = 'Your name is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $name) ) {
+                $output['message'][] = 'Your name should be contain only characters.';
+            } 
+            // validate ID
+            if( empty( $id ) ) {
+                $output['message'][] = 'Your ID is required.';
+            } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $id) ) {
+                $output['message'][] = 'Your ID should be contain only alpha numeric characters.';
+            } 
+            // validate ID
+            if( empty( $shift ) ) {
+                $output['message'][] = 'Your shift is required.';
+            } elseif( !preg_match('/^[a-zA-Z \d]+$/', $shift) ) {
+                $output['message'][] = 'Your shift name should be contain only characters.';
             }
             // validate username
             if( empty( $username ) ) {
@@ -970,68 +1000,28 @@ if( isset( $_POST['form']) && $_POST['form'] == 'registration' ) {
             } elseif( strlen( $password ) < 6 ) {
                 $output['message'][] = 'Password length should be at least 6 characters long.';
             }
-            // validate email
-            if( empty( $email ) ) {
-                $output['message'][] = 'Email address is required.';
-            } elseif( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
-                $output['message'][] = 'Email address is not correct.';
-            } elseif( $found_email == 1 ) {
-                $output['message'][] = 'Email address is already exist, Please choose another.';
-            }
             // validate registration type
             if( empty( $registration_type ) ) {
                 $output['message'][] = 'Select registration type.';
             } elseif( !in_array( $registration_type, [1, 2]) ) {
                 $output['message'][] = 'Invalid registration type given.';
             }
-
-            // if registration type for student then validate this
-            if( 1 == $registration_type ) {
-                // Validate roll name
-                if( empty( $roll ) ) {
-                    $output['message'][] = 'Your roll number is required';
-                } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $roll) ) {
-                    $output['message'][] = 'Your roll number should contain only alpha numeric characters.';
-                } elseif( strlen( $roll ) > 15 || strlen( $roll ) < 2 ) {
-                    $output['message'][] = 'Invalid roll number given';
-                }
-                // Validate batch
-                if( empty( $batch ) ) {
-                    $output['message'][] = 'Your batch name is required';
-                } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $batch) ) {
-                    $output['message'][] = 'Your batch name should contain only alpha numeric characters.';
-                } elseif( strlen( $batch ) > 15 || strlen( $batch ) < 2 ) {
-                    $output['message'][] = 'Invalid batch name given';
-                }
-                // Validate department
-                if( empty( $department ) ) {
-                    $output['message'][] = 'Your department name is required';
-                } elseif( !preg_match('/^[a-zA-Z0-9 \d]+$/', $department) ) {
-                    $output['message'][] = 'Your department name should contain only alpha numeric characters.';
-                } elseif( strlen( $batch ) > 30 || strlen( $department ) < 2 ) {
-                    $output['message'][] = 'Invalid department name given';
-                }
-            }
         }
 
         if( empty( $output['message'] ) ) {
-            $output['success'] = false;
 
             $inserting_data = [ 
-                'fname' => $fname, 
-                'lname' => $lname, 
-                'username' => $username, 
-                'password' => $hash_password, 
-                'email' => $email,
+                'email' => $email, 
+                'mobile' => $mobile, 
+                'program' => $program, 
+                'session' => $session, 
+                'name' => $name,
+                'id' => $id,
+                'shift' => $shift,
+                'username' => $username,
+                'password' => $hash_password,
                 'st_type' => $registration_type,
             ];
-
-            // add follow column if the registration is for student
-            if( 1 == $registration_type ) {
-                $inserting_data['roll'] = $roll;
-                $inserting_data['batch'] = $batch;
-                $inserting_data['department'] = $department;
-            }
 
             if( insert( $inserting_data, 'sms_registration' ) ) {
                 $output['success'] = true;
