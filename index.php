@@ -21,7 +21,7 @@ check_user_login_status();
                 <div class="card-body">
                     <?php 
                     $st_id = (int) $_SESSION['st_id'];
-                    $get_members = mysqli_query( $mysqli, "SELECT name, st_id FROM sms_registration WHERE st_id != '$st_id' ");
+                    $get_members = mysqli_query( $mysqli, "SELECT name, st_id, id FROM sms_registration WHERE st_id != '$st_id' ");
                     $found_members = mysqli_num_rows( $get_members );
                     ?>
 
@@ -44,6 +44,7 @@ check_user_login_status();
                                 <?php while( $result = mysqli_fetch_array( $get_members, MYSQLI_ASSOC ) ) : 
                                     $name = $result['name'];
                                     $result_st_id = $result['st_id'];
+                                    $result_id = $result['id'];
                                     $checked = '';
                                     if( in_array( $result_st_id, $all_ex_members ) ) {
                                         $checked = 'checked';
@@ -51,7 +52,7 @@ check_user_login_status();
                                     ?>
                                     <div class="form-check">
                                         <label class="form-check-label">
-                                        <input type="checkbox" <?php echo $checked; ?> class="form-check-input" name="group_members[]" value="<?php echo $result_st_id; ?>"> <?php echo $name; ?> <i class="input-helper"></i></label>
+                                        <input type="checkbox" <?php echo $checked; ?> class="form-check-input" name="group_members[]" value="<?php echo $result_st_id; ?>"> <?php echo $name . ' ('. $result_id . ')'; ?> <i class="input-helper"></i></label>
                                     </div>
                                 <?php endwhile; ?>
                             <?php endif; ?>

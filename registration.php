@@ -13,28 +13,43 @@
               			</h3>
             		</div>
 					<div class="row">
-						<div class="col-md-6 col-sm-12 grid-margin stretch-card">
+						<div class="col-md-8 col-sm-12 grid-margin stretch-card">
 							<div class="card">
 								<div class="card-body">
 									<h4 class="card-title">Enter fill up the form below to a reister a new account.</h4>
 									<form class="pt-3" id="form" method="POST" action="">
+										<div class="form-group">
+											<label for="">Please choose registration type.</label>
+											<div class="form-check form-check-inline">
+												<label class="form-check-label">
+													<input type="radio" class="form-check-input registration_type" name="registration_type" id="registration_type" value="1"> Student <i class="input-helper"></i>
+												</label>
+											</div>
+											<div class="form-check form-check-inline">
+												<label class="form-check-label">
+													<input type="radio" class="form-check-input registration_type" name="registration_type" id="registration_type" value="2"> Teacher <i class="input-helper"></i>
+												</label>
+											</div>
+										</div>
 										<div class="form-group">
 											<input type="email" class="form-control form-control-lg" placeholder="Email Address" name="email">
 										</div>
 										<div class="form-group">
 											<input type="number" class="form-control form-control-lg" placeholder="Mobile Number" name="mobile">
 										</div>
-										<div class="form-group">
-											<input type="text" class="form-control form-control-lg" placeholder="Program" name="program">
-										</div>
-										<div class="form-group">
-											<input type="text" class="form-control form-control-lg" placeholder="Session" name="session">
+										<div class="hide-me">
+											<div class="form-group">
+												<input type="text" class="form-control form-control-lg" placeholder="Program" name="program">
+											</div>
+											<div class="form-group">
+												<input type="text" class="form-control form-control-lg" placeholder="Session" name="session">
+											</div>
+											<div class="form-group">
+												<input type="text" class="form-control form-control-lg" placeholder="Your shift" name="shift">
+											</div>
 										</div>
 										<div class="form-group">
 											<input type="text" class="form-control form-control-lg" placeholder="Your ID" name="id">
-										</div>
-										<div class="form-group">
-											<input type="text" class="form-control form-control-lg" placeholder="Your shift" name="shift">
 										</div>
 										<div class="form-group">
 											<input type="text" class="form-control form-control-lg" placeholder="Your name" name="name">
@@ -44,18 +59,6 @@
 										</div>
 										<div class="form-group">
 											<input type="password" class="form-control form-control-lg" placeholder="Password" name="password">
-										</div>
-										<div class="form-group">
-											<div class="form-check">
-												<label class="form-check-label">
-													<input type="radio" class="form-check-input registration_type" name="registration_type" id="registration_type" value="1"> Student <i class="input-helper"></i>
-												</label>
-											</div>
-											<div class="form-check">
-												<label class="form-check-label">
-													<input type="radio" class="form-check-input registration_type" name="registration_type" id="registration_type" value="2"> Teacher <i class="input-helper"></i>
-												</label>
-											</div>
 										</div>
 										<div class="form-group">
 											<div class="result"></div>

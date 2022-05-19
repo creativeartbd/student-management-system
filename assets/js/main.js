@@ -30,9 +30,9 @@
         $(".registration_type").change( function() {
             var current = $(this).val();
             if( current == 2 ) {
-                $(".hide_me").hide('slow');
+                $(".hide-me").hide('slow');
             } else {
-                $(".hide_me").show('slow');
+                $(".hide-me").show('slow');
             }
         });
         $(".approve_project").click(function(){

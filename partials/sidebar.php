@@ -1,14 +1,17 @@
 <!-- partial:partials/_sidebar.html -->
 <?php
-$sidebar_st_id = (int) $_SESSION['st_id'];
-$sidebar_get_members = mysqli_query( $mysqli, "SELECT st_id FROM sms_registration WHERE st_id != '$sidebar_st_id' ");
-$sidebar_found_members = mysqli_num_rows( $sidebar_get_members ); 
+$sidebar_found_members = 0;
+if( isset( $_SESSION['st_id'] ) && !empty( $_SESSION['st_id'] ) ) {
+  $sidebar_st_id = (int) $_SESSION['st_id'];
+  $sidebar_get_members = mysqli_query( $mysqli, "SELECT st_id FROM sms_registration WHERE st_id != '$sidebar_st_id' ");
+  $sidebar_found_members = mysqli_num_rows( $sidebar_get_members ); 
+}
 ?>
 <nav class="sidebar sidebar-offcanvas mt-2" id="sidebar">
   <ul class="nav">
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type']) ) : ?>
     <li class="nav-item nav-profile">
-      <a href="#" class="nav-link">
+      <a href="profile.php" class="nav-link">
         <div class="nav-profile-image">
           <?php 
           $username = $_SESSION['username'];
