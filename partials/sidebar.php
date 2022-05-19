@@ -1,4 +1,9 @@
 <!-- partial:partials/_sidebar.html -->
+<?php
+$sidebar_st_id = (int) $_SESSION['st_id'];
+$sidebar_get_members = mysqli_query( $mysqli, "SELECT st_id FROM sms_registration WHERE st_id != '$sidebar_st_id' ");
+$sidebar_found_members = mysqli_num_rows( $sidebar_get_members ); 
+?>
 <nav class="sidebar sidebar-offcanvas mt-2" id="sidebar">
   <ul class="nav">
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type']) ) : ?>
@@ -68,6 +73,7 @@
     </li>
     <?php endif; ?>
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) && $_SESSION['login_type'] == 1 ) : ?>
+    <?php if( $sidebar_found_members > 0 ) : ?>
     <li class="nav-item">
       <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
         <span class="menu-title">Project</span>
@@ -88,6 +94,7 @@
         <i class="mdi mdi-projector menu-icon"></i>
       </a>
     </li>
+    <?php endif; ?>
     <?php endif; ?>
     <?php if( isset( $_SESSION['username'] ) && isset( $_SESSION['login_type'] ) && $_SESSION['login_type'] == 2 ) : ?>
     <li class="nav-item">

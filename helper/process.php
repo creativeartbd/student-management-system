@@ -1,6 +1,85 @@
 <?php
 require_once 'functions.php';
 
+// create group 
+if( isset( $_POST['form']) && ( $_POST['form'] == 'create_group' ) || ( $_POST['form'] == 'update_group' ) ) {
+
+    $group_members = isset( $_POST['group_members'] ) ? $_POST['group_members'] : '';
+    $group_members_arr = [];
+    $request = $_POST['form'];
+
+    if (!empty( $group_members ) && is_array( $group_members ) ) {
+        foreach( $group_members as $key => $value ) {
+            $group_members_arr[] = filter_var( $value, FILTER_SANITIZE_STRING );
+        }
+    }
+
+    $st_id = (int) $_SESSION['st_id'];
+    $username = $_SESSION['username'];
+
+    $check_group = mysqli_query( $mysqli, "SELECT st_id FROM sms_group WHERE st_id = '$st_id' ");
+    $found_group = mysqli_num_rows( $check_group );
+
+    // get existing members
+    $get_ex_members = mysqli_query( $mysqli, "SELECT group_members, g_id FROM sms_group WHERE st_id = '$st_id'");
+    $result_ex_members = mysqli_fetch_array( $get_ex_members, MYSQLI_ASSOC );
+    $ex_members = unserialize( $result_ex_members[ 'group_members' ] );
+    $ex_g_id = $result_ex_members['g_id'];
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+
+    if( isset( $group_members_arr ) ) {
+        if( empty( $group_members_arr ) ) {
+            $output['message'][] = 'Please add some group memebers.';
+        } 
+
+        if( empty( $output['message'] ) ) {
+
+            $group_members_serialize = serialize( $group_members_arr );
+            array_push( $group_members_arr, $st_id );
+            $diffs = array_diff( $ex_members, $group_members_arr ) ;
+
+            if( 'update_group' == $request ) {
+                $query_group = mysqli_query( $mysqli, "UPDATE sms_group SET group_members = '$group_members_serialize' WHERE st_id = '$st_id' ");
+
+                foreach( $group_members_arr as $member ) {
+                    $update_profile = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$ex_g_id' WHERE st_id = '$member'  ");
+                }
+
+                foreach( $diffs  as $key => $ex_member ) {
+                    $update1 = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = 0 WHERE st_id = '$ex_member' ");
+                }
+
+                $message = 'Successfully updated the group.';
+
+            } elseif( 'create_group' == $request ) {
+
+                $query_group = mysqli_query( $mysqli, "INSERT INTO sms_group ( group_members, st_id ) VALUES ( '$group_members_serialize', '$st_id' ) ");
+                
+                $g_id = mysqli_insert_id();
+                foreach( $group_members_arr as $member ) {
+                    $update_profile = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$g_id' WHERE st_id = '$member'  ");
+                }
+                
+                $message = 'Successfully created the group.';
+            }
+            
+            if( $query_group ) {
+                $output['success'][] = true;
+                $output['message'][] = $message;
+            } else {
+                $output['success'][] = false;
+                $output['message'][] = "Opps! Something wen't wrong! Please contact administrator.";
+            }
+        }
+    
+        echo json_encode($output);
+    }
+}
+
+// Chat
 if( isset( $_POST['form']) && $_POST['form'] == 'getchat' ) {
     
     $st_id = (int) $_SESSION['st_id'];
