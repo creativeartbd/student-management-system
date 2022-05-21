@@ -16,43 +16,34 @@ check_user_login_status();
         </h3>
     </div>
     <div class="row">
+        <?php if( isset( $_SESSION['login_type'] ) && $_SESSION['login_type'] == 1 ) : ?>
         <div class="col-md-6 stretch-card grid-margin">
             <div class="card bg-gradient-default card-img-holder p-3">
                 <div class="card-body">
                     <?php 
                     $st_id = (int) $_SESSION['st_id'];
-                    $get_members = mysqli_query( $mysqli, "SELECT name, st_id, id FROM sms_registration WHERE st_id != '$st_id' ");
+                    $get_members = mysqli_query( $mysqli, "SELECT name, st_id, id FROM sms_registration WHERE st_id != '$st_id' and st_type = 1 ");
                     $found_members = mysqli_num_rows( $get_members );
                     ?>
 
-                    <h4 class="mb-3"><?php if( $found_members > 0 ) echo 'Update Group'; else { echo 'Create a new group'; } ?></h4>
+                    <h4 class="mb-3">Create a new group.</h4>
                     <form class="" id="form" method="POST" action="" enctype="multipart/form-data">
                         <div class="form-group">
+                            <label for="">Write your group name</label>
+                            <input type="text" name="g_name" class="form-control" placeholder="Enter your group name">
+                        </div>
+                        <div class="form-group">
                         <label for="">Choose Group Member</label>
-                            <?php 
-                            $ex_members = mysqli_query( $mysqli, "SELECT sg.group_members, sr.name, sr.st_id FROM sms_group AS sg LEFT JOIN sms_registration AS sr ON sg.st_id = sr.st_id WHERE sg.st_id = '$st_id' ");
-                            $found_ex_members = mysqli_num_rows( $ex_members );
-
-                            $all_ex_members = [];
-                            if( $found_ex_members > 0 ) {
-                                $result_ex_members = mysqli_fetch_array( $ex_members, MYSQLI_ASSOC );
-                                $all_ex_members = unserialize( $result_ex_members['group_members'] );
-                            }
-
-                            
+                            <?php
                             if( $found_members > 0 ) : ?>
                                 <?php while( $result = mysqli_fetch_array( $get_members, MYSQLI_ASSOC ) ) : 
                                     $name = $result['name'];
                                     $result_st_id = $result['st_id'];
                                     $result_id = $result['id'];
-                                    $checked = '';
-                                    if( in_array( $result_st_id, $all_ex_members ) ) {
-                                        $checked = 'checked';
-                                    }
                                     ?>
                                     <div class="form-check">
                                         <label class="form-check-label">
-                                        <input type="checkbox" <?php echo $checked; ?> class="form-check-input" name="group_members[]" value="<?php echo $result_st_id; ?>"> <?php echo $name . ' ('. $result_id . ')'; ?> <i class="input-helper"></i></label>
+                                        <input type="checkbox" class="form-check-input" name="group_members[]" value="<?php echo $result_st_id; ?>"> <?php echo $name . ' ('. $result_id . ')'; ?> <i class="input-helper"></i></label>
                                     </div>
                                 <?php endwhile; ?>
                             <?php endif; ?>
@@ -60,19 +51,44 @@ check_user_login_status();
                         <div class="form-group">
                             <div class="result"></div>
                             <div class="form-group">
-                                <?php if( $found_ex_members > 0 ) : ?>
-                                    <input type="hidden" name="form" value="update_group">
-                                    <input type="submit" value="Update Group" class="btn btn-block btn-gradient-success btn-lg font-weight-medium auth-form-btn ajax-btn">
-                                <?php else : ?>
-                                    <input type="hidden" name="form" value="create_group">
-                                    <input type="submit" value="Create Group" class="btn btn-block btn-gradient-danger btn-lg font-weight-medium auth-form-btn ajax-btn">
-                                <?php endif; ?>
+                                <input type="hidden" name="form" value="create_group">
+                                <input type="submit" value="Create Group" class="btn btn-block btn-gradient-danger btn-lg font-weight-medium auth-form-btn ajax-btn">
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+        <div class="col-md-6 stretch-card grid-margin">
+            <div class="card bg-gradient-default card-img-holder p-3">
+                <div class="card-body">
+                    <h4 class="mb-3">All Groups.</h4>
+                    <table class="table">
+                        <tr>
+                            <th>S.l</th>
+                            <th>Group Name</th>
+                            <th>Action</th>
+                        </tr>
+                        <?php 
+                        $get_all_groups = mysqli_query( $mysqli, "SELECT * FROM sms_group WHERE st_id = '$st_id' ");
+                        $count = 1;
+                        while ( $result_all_groups = mysqli_fetch_array( $get_all_groups ) ) {
+                            $g_name = $result_all_groups['g_name'];
+                            $g_id = $result_all_groups['g_id'];
+                            $created = $result_all_groups['created'];
+                            echo "<tr>";
+                                echo "<td>$count</td>";
+                                echo "<td>$g_name</td>";
+                                echo "<td><a href='edit-group.php?g_id=$g_id'>Edit</a></td>";
+                            echo "</tr>";
+                            $count++;
+                        }
+                        ?>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
         <div class="col-md-6 stretch-card grid-margin">
             <div class="card bg-gradient-success card-img-holder text-white">
                 <div class="card-body">

@@ -1,12 +1,16 @@
 <?php
 require_once 'functions.php';
 
-// create group 
-if( isset( $_POST['form']) && ( $_POST['form'] == 'create_group' ) || ( $_POST['form'] == 'update_group' ) ) {
+// update group 
+if( isset( $_POST['form'] ) && $_POST['form'] == 'update_group' ) {
 
     $group_members = isset( $_POST['group_members'] ) ? $_POST['group_members'] : '';
     $group_members_arr = [];
-    $request = $_POST['form'];
+    $get_g_id = (int) $_POST['g_id'];
+    $st_id = (int) $_SESSION['st_id'];
+
+    $check_get_g_id = mysqli_query( $mysqli, "SELECT g_id FROM sms_group WHERE g_id = '$get_g_id' AND st_id = '$st_id' ");
+    $found_get_g_id = mysqli_num_rows( $check_get_g_id );
 
     if (!empty( $group_members ) && is_array( $group_members ) ) {
         foreach( $group_members as $key => $value ) {
@@ -17,15 +21,6 @@ if( isset( $_POST['form']) && ( $_POST['form'] == 'create_group' ) || ( $_POST['
     $st_id = (int) $_SESSION['st_id'];
     $username = $_SESSION['username'];
 
-    $check_group = mysqli_query( $mysqli, "SELECT st_id FROM sms_group WHERE st_id = '$st_id' ");
-    $found_group = mysqli_num_rows( $check_group );
-
-    // get existing members
-    $get_ex_members = mysqli_query( $mysqli, "SELECT group_members, g_id FROM sms_group WHERE st_id = '$st_id'");
-    $result_ex_members = mysqli_fetch_array( $get_ex_members, MYSQLI_ASSOC );
-    $ex_members = unserialize( $result_ex_members[ 'group_members' ] );
-    $ex_g_id = $result_ex_members['g_id'];
-
     // Hold all errors
     $output['message'] = [];
     $output['success'] = false;
@@ -33,48 +28,140 @@ if( isset( $_POST['form']) && ( $_POST['form'] == 'create_group' ) || ( $_POST['
     if( isset( $group_members_arr ) ) {
         if( empty( $group_members_arr ) ) {
             $output['message'][] = 'Please add some group memebers.';
-        } 
+        }
+        if( empty( $get_g_id ) ) {
+            $output['message'][] = 'Group id is missing';
+        } elseif( $found_get_g_id == 0 ) {
+            $output['message'][] = 'Couldn\'t found the group id';
+        }
 
         if( empty( $output['message'] ) ) {
 
-            $group_members_serialize = serialize( $group_members_arr );
-            array_push( $group_members_arr, $st_id );
-            $diffs = array_diff( $ex_members, $group_members_arr ) ;
+            $new_group_members = json_encode( $group_members_arr );
+            $update_group = mysqli_query( $mysqli, "UPDATE sms_group SET group_members = '$new_group_members' WHERE st_id = '$st_id' ");
 
-            if( 'update_group' == $request ) {
-                $query_group = mysqli_query( $mysqli, "UPDATE sms_group SET group_members = '$group_members_serialize' WHERE st_id = '$st_id' ");
+            if( $update_group ) {
 
+                // get the existing g_id of members
                 foreach( $group_members_arr as $member ) {
-                    $update_profile = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$ex_g_id' WHERE st_id = '$member'  ");
+                    $members_ex_gid = mysqli_query( $mysqli, "SELECT g_id FROM sms_registration WHERE st_id = '$member' ");
+                    $members_ex_gid_s = [];
+                    if( mysqli_num_rows( $members_ex_gid ) > 0 ) {
+                        $members_ex_gid_result = mysqli_fetch_array( $members_ex_gid, MYSQLI_ASSOC );
+                        $members_ex_gid_s = json_decode( $members_ex_gid_result['g_id'] );
+                    }
+                    
+                    if( empty( $members_ex_gid_s ) ) {
+                        
+                            $members_ex_gid_s[] = $get_g_id;
+                            $members_ex_gid_s = json_encode( $members_ex_gid_s );
+                            $update_their_g_id = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$members_ex_gid_s' WHERE st_id = '$member' ");
+                       
+                    } else {
+                        if( ! in_array( $get_g_id,  $members_ex_gid_s ) ) {
+                            $members_ex_gid_s[] = $get_g_id;
+                            $members_ex_gid_s = json_encode( $members_ex_gid_s );
+                            $update_their_g_id = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$members_ex_gid_s' WHERE st_id = '$member' ");
+                        } 
+                    }
+                    
                 }
 
-                foreach( $diffs  as $key => $ex_member ) {
-                    $update1 = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = 0 WHERE st_id = '$ex_member' ");
-                }
-
-                $message = 'Successfully updated the group.';
-
-            } elseif( 'create_group' == $request ) {
-
-                $query_group = mysqli_query( $mysqli, "INSERT INTO sms_group ( group_members, st_id ) VALUES ( '$group_members_serialize', '$st_id' ) ");
-                
-                $g_id = mysqli_insert_id();
-                foreach( $group_members_arr as $member ) {
-                    $update_profile = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$g_id' WHERE st_id = '$member'  ");
-                }
-                
-                $message = 'Successfully created the group.';
-            }
-            
-            if( $query_group ) {
                 $output['success'][] = true;
-                $output['message'][] = $message;
+                $output['message'][] = 'Successfully updated the group.';
             } else {
+                $g_id = 0;
                 $output['success'][] = false;
                 $output['message'][] = "Opps! Something wen't wrong! Please contact administrator.";
             }
         }
+
+        echo json_encode($output);
+    }
+}
+
+// create group 
+if( isset( $_POST['form'] ) && $_POST['form'] == 'create_group' ) {
+
+    $group_members = isset( $_POST['group_members'] ) ? $_POST['group_members'] : '';
+    $g_name = validate( $_POST['g_name'] );
+    $group_members_arr = [];
+
+    if (!empty( $group_members ) && is_array( $group_members ) ) {
+        foreach( $group_members as $key => $value ) {
+            $group_members_arr[] = filter_var( $value, FILTER_SANITIZE_STRING );
+        }
+    }
+
+    $st_id = (int) $_SESSION['st_id'];
+    $username = $_SESSION['username'];
+
+    // Hold all errors
+    $output['message'] = [];
+    $output['success'] = false;
+    $output['reload'] = true;
+
+    if( isset( $group_members_arr ) && isset( $g_name ) ) {
     
+        if( empty( $g_name ) ) {
+            $output['message'][] = 'Group name is required';
+        } elseif( !preg_match('/^[a-zA-Z0-9. \], \d]+$/', $g_name) ) {
+            $output['message'][] = 'Group name should contain only alpha numeric characters.';
+        } elseif( strlen( $g_name ) > 50 || strlen( $g_name ) < 2 ) {
+            $output['message'][] = 'Group name length should be 2-50 characters long.';
+        }
+
+        if( empty( $group_members_arr ) ) {
+            $output['message'][] = 'Please add some group memebers.';
+        } 
+
+        if( empty( $output['message'] ) ) {
+
+            $group_members_json= json_encode( $group_members_arr );
+            $insert_group = mysqli_query( $mysqli, "INSERT INTO sms_group ( g_name, group_members, st_id ) VALUES ( '$g_name', '$group_members_json', '$st_id' ) ");
+            $last_g_id = mysqli_insert_id( $mysqli );
+        
+            if( $insert_group ) {
+                // add group id to the student
+                // $g_id = (array) mysqli_insert_id( $mysqli );
+                // $g_id_json = json_encode( $g_id );
+                // foreach( $group_members_arr as $member ) {
+                //     $insert_g_id = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$g_id_json' WHERE st_id = '$member' ");
+                // }
+
+                // get the existing g_id of members
+                foreach( $group_members_arr as $member ) {
+                    $members_ex_gid = mysqli_query( $mysqli, "SELECT g_id FROM sms_registration WHERE st_id = '$member' ");
+                    $members_ex_gid_s = [];
+                    if( mysqli_num_rows( $members_ex_gid ) > 0 ) {
+                        $members_ex_gid_result = mysqli_fetch_array( $members_ex_gid, MYSQLI_ASSOC );
+                        $members_ex_gid_s = json_decode( $members_ex_gid_result['g_id'] );
+                    }
+                    
+                    if( empty( $members_ex_gid_s ) ) {
+                        $members_ex_gid_s[] = $last_g_id;
+                        $members_ex_gid_s = json_encode( $members_ex_gid_s );
+                        $update_their_g_id = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$members_ex_gid_s' WHERE st_id = '$member' ");
+                    } else {
+                        if( ! in_array( $last_g_id,  $members_ex_gid_s ) ) {
+                            $members_ex_gid_s[] = $last_g_id;
+                            $members_ex_gid_s = json_encode( $members_ex_gid_s );
+                            $update_their_g_id = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$members_ex_gid_s' WHERE st_id = '$member' ");
+                        } 
+                    }
+                    
+                }
+
+
+                $output['success'][] = true;
+                $output['message'][] = 'Successfully created a new group.';
+            } else {
+                $g_id = 0;
+                $output['success'][] = false;
+                $output['message'][] = "Opps! Something wen't wrong! Please contact administrator.";
+            }
+        }
+
         echo json_encode($output);
     }
 }
