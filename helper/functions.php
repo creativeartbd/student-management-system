@@ -144,3 +144,20 @@ function student_notification( $student_id = null ) {
         echo "</table>";
     }
 }
+
+function student_project_progress() {
+    global $mysqli;
+    $ses_st_id = (int) $_SESSION['st_id'];
+    $get_goal = mysqli_query( $mysqli, "SELECT goal_id FROM sms_goal WHERE goal_to = '$ses_st_id' ");
+    $total_goal = mysqli_num_rows( $get_goal );
+
+    $answer_goal = mysqli_query( $mysqli, "SELECT goal_id FROM sms_goal WHERE goal_to = '$ses_st_id' AND is_answer = 1 ");
+    $answered_goal = mysqli_num_rows( $answer_goal );
+
+    $progress = round( $answered_goal / $total_goal * 100 );
+    ?>
+    <div class="progress" style="height: 15px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: <?php echo $progress ?>%" aria-valuenow="<?php echo $progress ?>" aria-valuemin="0" aria-valuemax="100"><?php echo $progress ?>%</div>
+    </div>
+    <?php
+}
