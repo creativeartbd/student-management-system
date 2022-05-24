@@ -269,6 +269,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
 
     $goal_reply = htmlspecialchars(trim($_POST['goal_reply'] ) );
     $goal_id = (int) htmlspecialchars(trim($_POST['goal_id'] ) );
+
     $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
     if( isset( $_FILES['goal_pic']['name'] ) ) {
         $file_name = htmlspecialchars( $_FILES['goal_pic']['name'] );
@@ -324,10 +325,11 @@ if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
                         'goal_reply' => $goal_reply, 
                         'goal_file' => serialize( $new_file_name ), 
                         'st_id' => $st_id, 
-                        'goal_id' => $goal_id
+                        'goal_id' => $goal_id,
                     ], 'sms_goal_answer' ) ) {
                         $output['success'] = true;
                         $output['message'] = "Successfully submited your goal.";
+                        $update_goal = mysqli_query( $mysqli, "UPDATE sms_goal SET is_answer = 1 WHERE goal_id = '$goal_id' " );
                     } else {
                         $output['success'] = false;
                         $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
@@ -432,37 +434,23 @@ if( isset( $_POST['form']) && $_POST['form'] == 'approve_project' ) {
 
 // Process project update form 
 if( isset( $_POST['form']) && $_POST['form'] == 'updateproject_by_teacher' ) {
-    
-    $ptitle = htmlspecialchars( $_POST['ptitle'] );
-    $pdes = htmlspecialchars( $_POST['pdes'] );
-    $g_id = (int) htmlspecialchars( $_POST['g_id'] );
-    $username = htmlspecialchars( trim( $_POST['username'] ) );
-    $supervisor = htmlspecialchars( trim( $_POST['supervisor'] ) );
-    
-    $st_type = htmlspecialchars( $_POST['login_type'] );
-    $st_id = (int) $_POST['st_id'];
 
+    $get_p_id = (int) $_POST['get_p_id'];
+    $ses_st_id= (int) $_SESSION['st_id'];
+    $ptitle = validate( $_POST['ptitle'] );
+    $pdes = validate( $_POST['pdes'] );
+    $g_id = (int) validate( $_POST['group_name'] );
+    $supervisor = (int) validate( $_POST['supervisor'] );
+    $gnumber = validate( $_POST['gnumber'] );
+    $gemail = validate( $_POST['gemail'] );
     $group_members = isset( $_POST['group_members'] ) ? $_POST['group_members'] : '';
-    $group_members_arr = [];
-
-    if (!empty( $group_members ) && is_array( $group_members ) ) {
-        foreach( $group_members as $key => $value ) {
-            $group_members_arr[] = filter_var( $value, FILTER_SANITIZE_STRING );
-        }
-    }
-
-    $do_validation = true;
-    if( $supervisor == $_SESSION['st_id'] ) {
-        $do_validation = false;
-    }
 
     $file_name = $file_tmp_name = $file_size = $file_type = $extension = '';
-
     if( isset( $_FILES['pfile']['name'] ) ) {
-        $file_name = htmlspecialchars( $_FILES['pfile']['name'] );
-        $file_tmp_name = htmlspecialchars( $_FILES['pfile']['tmp_name'] );
-        $file_size = htmlspecialchars( $_FILES['pfile']['size'] );
-        $file_type = htmlspecialchars( $_FILES['pfile']['type'] );
+        $file_name = validate( $_FILES['pfile']['name'] );
+        $file_tmp_name = validate( $_FILES['pfile']['tmp_name'] );
+        $file_size = validate( $_FILES['pfile']['size'] );
+        $file_type = validate( $_FILES['pfile']['type'] );
 
         $allowed_extension = [ 'pdf', 'doc', 'docx' ];
         $explode = explode( '.', $file_name );
@@ -476,129 +464,94 @@ if( isset( $_POST['form']) && $_POST['form'] == 'updateproject_by_teacher' ) {
     $output['message'] = [];
     $output['success'] = false;
 
-    // get existing members
-    $get_ex_members = mysqli_query( $mysqli, "SELECT group_members FROM sms_group WHERE st_id = '$st_id'");
-    $result_ex_members = mysqli_fetch_array( $get_ex_members, MYSQLI_ASSOC );
-    $ex_members = unserialize( $result_ex_members[ 'group_members' ] );
-
-    if( isset( $ptitle) && isset( $pdes ) && isset( $group_members_arr ) && isset( $supervisor ) ) {
-        if( empty( $ptitle ) && empty( $pdes ) && empty( $group_members_arr ) && empty( $supervisor ) ) {
+    if( isset( $ptitle) && isset( $pdes ) && isset( $g_id ) && isset( $gnumber ) && isset( $gemail ) ) {
+        if( empty( $ptitle ) && empty( $pdes ) && empty( $g_id ) && empty( $gnumber ) && empty( $gemail ) ) {
             $output['message'][] = 'All fields is required';
         } else {
+            // validate project title
+            if( empty( $ptitle ) ) {
+                $output['message'][] = 'Project title is required.';
+            } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $ptitle) ) {
+                $output['message'][] = 'Project title should contain only alpha numeric characters.';
+            } elseif( strlen( $ptitle ) > 255 || strlen( $ptitle ) < 10 ) {
+                $output['message'][] = 'Project title length should be between 10-255 characters long.';
+            }
 
-            // Only teacher can update not supervisor
-            if( $do_validation ) {
-                // validate project title
-                if( empty( $ptitle ) ) {
-                    $output['message'][] = 'Project title is required.';
-                } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $ptitle) ) {
-                    $output['message'][] = 'Project title should contain only alpha numeric characters.';
-                } elseif( strlen( $ptitle ) > 255 || strlen( $ptitle ) < 10 ) {
-                    $output['message'][] = 'Project title length should be between 10-255 characters long.';
-                }
-                // validate project description
-                if( empty( $pdes ) ) {
-                    $output['message'][] = 'Project description is required';
-                } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $pdes) ) {
-                    $output['message'][] = 'Project description should contain only alpha numeric characters.';
-                } elseif( strlen( $pdes ) > 5000 ) {
-                    $output['message'][] = 'Project description length should be less than 5000 characters long.';
-                }
-                // Validate project file
-                if( ! empty( $file_name) ) {
-                    if ( ! in_array( $extension, $allowed_extension ) ) {
-                        $output['message'][] = 'Uploaded file type is not allowed. We are currently allowing ' . implode(', ', $allowed_extension )  .' filetype';
-                    } elseif( $file_size > $allowed_file_size ) {
-                        $output['message'][] = 'Your uploaded file size must be less than 5 MB';
-                    }
+            // validate mobile
+            if( empty( $gnumber ) ) {
+                $output['message'][] = 'Mobile number is required.';
+            } elseif( ! preg_match( "/^[0-9]{11}$/", $gnumber ) ) {
+                $output['message'][] = 'Invalid mobile number given. Number should be start with 0 and 11 characters length';
+            }
+            // validate email
+            if( empty( $gemail ) ) {
+                $output['message'][] = 'Email address is required.';
+            } elseif( ! filter_var( $gemail, FILTER_VALIDATE_EMAIL ) ) {
+                $output['message'][] = 'Email address is not correct';
+            }
+
+            // validate project description
+            if( empty( $pdes ) ) {
+                $output['message'][] = 'Project description is required';
+            } elseif( !preg_match('/^[a-zA-Z0-9.!@#*()-_, \d]+$/', $pdes) ) {
+                $output['message'][] = 'Project description should contain only alpha numeric characters.';
+            } elseif( strlen( $pdes ) > 5000 ) {
+                $output['message'][] = 'Project description length should be less than 5000 characters long.';
+            }
+            // Validate project file
+            if( ! empty( $file_name) ) {
+                if ( ! in_array( $extension, $allowed_extension ) ) {
+                    $output['message'][] = 'Uploaded file type is not allowed. We are currently allowing ' . implode(', ', $allowed_extension )  .' filetype';
+                } elseif( $file_size > $allowed_file_size ) {
+                    $output['message'][] = 'Your uploaded file size must be less than 5 MB';
                 }
             }
-            
             // validate group members
-            if( empty( $group_members ) ) {
-                $output['message'][] = 'Please choose your group members. You can choose upto 10 members.';
-            } elseif( !preg_grep('/^[0-9\d]+$/', $group_members_arr) ) {
-                $output['message'][] = 'Invalid group member is given.';
+            if( empty( $g_id ) ) {
+                $output['message'][] = 'Please choose your group name.';
+            } elseif( !preg_match('/^[0-9\d]+$/', $g_id) ) {
+                $output['message'][] = 'Invalid group name is given.';
             } 
-
-            if( $do_validation ) {
-                // validate supervisor
-                if( empty( $supervisor ) ) {
-                    $output['message'][] = 'Supervisor is required.';
-                }
-            }
-            
         }
 
         if( empty( $output['message'] ) ) {
 
-            // On teacher can update
+            $updating_data = [ 
+                'project_title' => $ptitle, 
+                'project_description' => $pdes, 
+                'gnumber' => $gnumber, 
+                'gemail' => $gemail,
+                'g_id' => $g_id,
+            ];
 
-            $group_members_arr[] = $st_id;
-            $group_members = serialize( $group_members_arr );
-
-            if( $do_validation ) {
-                
+            // Supervisor can only edit group
+            if( $supervisor === $ses_st_id ) {
                 $updating_data = [ 
-                    'project_title' => $ptitle, 
-                    'project_description' => $pdes, 
-                    'username' => $username, 
-                    'supervisor' => $supervisor
+                    'g_id' => $g_id,
                 ];
-        
+            }
+ 
+            if( $supervisor !== $ses_st_id ) {
                 if( ! empty( $file_name ) ) { 
                     if( move_uploaded_file($file_tmp_name, '../assets/images/projects/'.$new_file_name) ) {
                         $updating_data['project_file'] = serialize($new_file_name);
                     } else {
-                        $output['success'] = false;
-                        $output['message'] = "Opps! Your project file is not uploading! Please contact administrator.";
+                        $output['success'][] = false;
+                        $output['message'][] = "Opps! Your project file is not uploading! Please contact administrator.";
                     } 
                 }
-
-                $update = update( 'sms_projects', $updating_data,  [ 
-                    'username' => $username, 
-                ] );
-                
-                if( $update ) {
-                    $output['success'] = true;
-                    $output['message'] = "Successfully updated the project.";
-                } else {
-                    $output['success'] = false;
-                    $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
-                }
-
-            }   
-
-            $sql_update = "UPDATE sms_projects SET edited_count = edited_count + 1 WHERE username = '$username'";
-            $sql_query = mysqli_query($mysqli, $sql_update);
-
-            if( ! $sql_query ) {
-                $output['success'] = false;
-                $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
-            } 
-
-            $update_members = mysqli_query( $mysqli, "UPDATE sms_group SET group_members = '$group_members' WHERE st_id = '$st_id' ");
-
-            if( ! $update_members ) {
-                $output['success'] = false;
-                $output['message'] = "Opps! Something wen't wrong! Please contact administrator.";
             }
 
-            if( ! $do_validation ) {
-                if( $update_members ) {
-                    $output['success'] = true;
-                    $output['message'] = "Successfully updated the project.";
-                }
-            }   
+            $update = update( 'sms_projects', $updating_data,  [ 
+                'p_id' => $get_p_id, 
+            ] );
 
-            $diffs = array_diff( $ex_members, $group_members_arr ) ;
-
-            foreach( $group_members_arr as $key  => $member ) {
-                $update = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = '$g_id' WHERE st_id = '$member' ");
-            }
-
-            foreach( $diffs  as $key => $ex_member ) {
-                $update1 = mysqli_query( $mysqli, "UPDATE sms_registration SET g_id = 0 WHERE st_id = '$ex_member' ");
+            if( $update ) {
+                $output['success'][] = true;
+                $output['message'][] = "Successfully updated your project.";
+            } else {
+                $output['success'][] = false;
+                $output['message'][] = "Opps! Something wen't wrong! Please contact administrator.";
             }
         }
     }

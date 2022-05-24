@@ -89,21 +89,22 @@ check_user_login_status();
             </div>
         </div>
         <?php endif; ?>
-        <div class="col-md-6 stretch-card grid-margin">
-            <div class="card bg-gradient-success card-img-holder text-white">
-                <div class="card-body">
-                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image">
-                    <h4 class="font-weight-normal mb-3">Notification<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
-                    <h3 class="mb-5">Some notification will goes to here.</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 stretch-card grid-margin">
+        <div class="col-md-12 stretch-card grid-margin">
             <div class="card bg-gradient-info card-img-holder text-white">
                 <div class="card-body">
                     <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image">
-                    <h4 class="font-weight-normal mb-3">Project Progress<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
-                    <h3 class="mb-5">Some notification will goes to here.</h3>
+                    <h4 class="font-weight-normal mb-3">Notification<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
+                    <h3 class="mb-5">Goal Notification</h3>
+                    <?php student_notification( $st_id ); ?>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 stretch-card grid-margin">
+            <div class="card bg-gradient-primary card-img-holder text-white">
+                <div class="card-body">
+                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image">
+                    <h4 class="font-weight-normal mb-3">Progress<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
+                    <h3 class="mb-5">Project Progress</h3>
                 </div>
             </div>
         </div>

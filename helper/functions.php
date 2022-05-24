@@ -106,8 +106,41 @@ function update ( $table_name, array $columns_values, $where_cols ) {
 }
 
 function check_user_login_status() {
+    session_regenerate_id();
     if( ! isset( $_SESSION['username'] ) && ! isset( $_SESSION['login_type'] ) ) {
         header("location:login.php");
         exit();
+    }
+}
+
+function student_notification( $student_id = null ) {
+    if( ! $student_id ) return;
+    global $mysqli;
+
+    $get_goal = mysqli_query( $mysqli, "SELECT goal_title, goal_id, goal_send, is_answer FROM sms_goal WHERE goal_to = '$student_id' ");
+    if( mysqli_num_rows( $get_goal) > 0 ) {
+        echo "<table class='table table-bordered text-white'>";
+        echo "<tr>";
+            echo "<th>Title</th>";
+            echo "<th>Send Date</th>";
+            echo "<th>Status</th>";
+        echo "</tr>";
+        while ( $get_goal_result = mysqli_fetch_array( $get_goal ) ) {
+            $goal_id = $get_goal_result['goal_id'];
+            $goal_title = $get_goal_result['goal_title'];
+            $goal_send = $get_goal_result['goal_send'];
+            $is_answer = $get_goal_result['is_answer'];
+            if( empty($is_answer) ) {
+                $status = "<a class='btn btn-gradient-danger btn-sm' href='my-project-goal.php' style='z-index:1; position: relative;'>Reply</a>";
+            } else {
+                $status = "<span class='btn btn-gradient-success btn-sm' href=''>Answered</span>";
+            }
+            echo "<tr>";
+                echo "<td>$goal_title</td>";
+                echo "<td>$goal_send</td>";
+                echo "<td>$status</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
     }
 }

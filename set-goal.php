@@ -28,9 +28,12 @@ check_user_login_status();
               <h3 class="page-title">
                 <?php
                 $username = htmlspecialchars( $_GET['username'] );
-                $st_id = (int) htmlspecialchars($_GET['st_id'] );
+                $p_id = (int) htmlspecialchars($_GET['p_id'] );
+                $get_st_id = (int) htmlspecialchars($_GET['st_id'] );
+
                 $st_type = (int) $_SESSION['login_type'];
-                $get_all_goal = mysqli_query( $mysqli, "SELECT sga.goal_file, sga.st_id, sg.* FROM sms_goal as sg LEFT JOIN sms_goal_answer as sga ON sg.goal_id = sga.goal_id WHERE sga.st_id = '$st_id' ");
+                // didn't answer the goal
+                $get_all_goal = mysqli_query( $mysqli, "SELECT sga.goal_file, sga.st_id, sg.* FROM sms_goal AS sg LEFT JOIN sms_goal_answer AS sga ON sg.goal_id = sga.goal_id WHERE sg.goal_to = '$get_st_id' ");
                 $found_row = mysqli_num_rows( $get_all_goal );
                 $get_username = htmlspecialchars( $_GET['username'] );
                 ?>
@@ -52,7 +55,7 @@ check_user_login_status();
                         </div>
                         <div class="form-group"><div class="result"></div></div>
                         <div class="mt-3">
-                            <input type="hidden" name="st_id" value=<?php echo $st_id; ?>>
+                            <input type="hidden" name="st_id" value=<?php echo $get_st_id; ?>>
                             <input type="hidden" name="form" value="setgoal">
                             <input type="submit" value="Add Project Goal" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                         </div>
@@ -71,6 +74,7 @@ check_user_login_status();
                       <tr>
                         <th>Goal Title</th>
                         <th>File</th>
+                        <th>Status</th>
                         <th>Action</th>
                       </tr>
                       <?php 
@@ -81,16 +85,30 @@ check_user_login_status();
                         $is_goal_approve = $goal_result['is_goal_approve'];  
                         $goal_file = unserialize( $goal_result['goal_file'] );  
                         $st_id = (int) $goal_result['st_id'];  
-                        if( 1 == $is_goal_end && 1 == $is_goal_approve ) {
-                          $approve_status = "<span class='btn btn-gradient-success btn-sm'>Approved</span>";
-                        } else {
-                          $approve_status = "<span class='btn btn-gradient-danger btn-sm'>Not Approved</span>";
-                        }
                       ?>
                       <tr>
                         <td><?php echo $goal_result['goal_title']; ?></td>
-                        <td><a class="btn btn-gradient-info btn-sm" href="download.php?file=<?php echo urlencode( $goal_file ); ?>">Download <i class="mdi mdi-eye menu-icon"></i></a></td>
-                        <td><a data-goal-id="<?php echo $goal_id; ?>" data-st-id="<?php echo $st_id; ?>" href="#" class="approve_goal" data-bs-toggle="modal" data-bs-target="#exampleModal"><?php echo $approve_status; ?></a></td>
+                        <td>
+                            <?php if( !empty( $goal_file ) ) : ?>
+                                <a class="btn btn-gradient-info btn-sm" href="download.php?file=<?php echo urlencode( $goal_file ); ?>">Download <i class="mdi mdi-eye menu-icon"></i></a>
+                            <?php else : ?>
+                                <span class="btn btn-gradient-danger btn-sm">Wating for answer</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if( 1 == $is_goal_end && 1 == $is_goal_approve ) : ?>
+                                <span class="btn btn-gradient-success btn-sm">Approved</span>
+                            <?php else : ?>
+                                <span class="btn btn-gradient-danger btn-sm">Not Approve</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if( 1 == $is_goal_end && 1 == $is_goal_approve ) : ?>
+                                <span class="btn btn-gradient-danger btn-sm">N/A</span>
+                            <?php else : ?>
+                              <a data-goal-id="<?php echo $goal_id; ?>" data-st-id="<?php echo $st_id; ?>" href="#" class="btn btn-gradient-success btn-sm approve_goal" data-bs-toggle="modal" data-bs-target="#exampleModal">Make Approve</a>
+                            <?php endif; ?>
+                        </td>
                       </tr>
                       <?php endwhile; ?>
                     </table>

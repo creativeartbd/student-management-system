@@ -116,7 +116,7 @@
                                     <?php endif; ?>
 
                                     <?php if( $is_approved == 1 ) : ?>
-                                            <a class="btn btn-gradient-primary btn-sm" href="set-goal.php?p_id=<?php echo $p_id; ?>&username=<?php echo $p_username; ?>">Set Goal</a>
+                                            <a class="btn btn-gradient-primary btn-sm" href="set-goal.php?p_id=<?php echo $p_id; ?>&username=<?php echo $p_username; ?>&st_id=<?php echo $st_id; ?>">Set Goal</a>
                                         <?php if( $approved_by == $username || $supervisor == $st_ses_id ) : ?>
                                             <a class="btn btn-gradient-info btn-sm" href="edit-student-project.php?p_id=<?php echo $p_id; ?>&username=<?php echo $p_username; ?>">Edit</a>
                                         <?php endif; ?>
