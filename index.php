@@ -79,7 +79,7 @@ check_user_login_status();
                             echo "<tr>";
                                 echo "<td>$count</td>";
                                 echo "<td>$g_name</td>";
-                                echo "<td><a href='edit-group.php?g_id=$g_id'>Edit</a></td>";
+                                echo "<td><a class='btn btn-gradient-primary btn-sm' href='edit-group.php?g_id=$g_id'>Update Group</a></td>";
                             echo "</tr>";
                             $count++;
                         }

@@ -20,89 +20,111 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title">Check all the students submitted projects.</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th> S.l </th>
-                                    <th> Prject Details</th>
-                                    <th> Action </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                    $get_all_projects = "SELECT r.st_id, r.id, r.program, r.session, r.name, r.email, r.profile_pic, p.project_file, p.edited_count, p.username, p.is_approved, p.approved_by, p.supervisor FROM sms_projects AS p LEFT JOIN sms_registration AS r ON r.username = p.username ";
-                                    $get_all_projects_query = mysqli_query( $mysqli, $get_all_projects ); 
-                                    $username = $_SESSION['username'];
-                                    $st_ses_id = (int) $_SESSION['st_id'];
-                                    
-                                    if( 0 == mysqli_num_rows( $get_all_projects_query ) ) {
-                                        echo "<div class='alert alert-warning'>No data found.</div>";
+                    <div class="row">
+                        <?php 
+                        $get_all_projects = "SELECT r.st_id, r.id, r.program, r.session, r.name, r.email, r.profile_pic, p.project_title, p.project_description, p.* FROM sms_projects AS p LEFT JOIN sms_registration AS r ON r.username = p.username ";
+                    
+                        $get_all_projects_query = mysqli_query( $mysqli, $get_all_projects ); 
+                        $username = $_SESSION['username'];
+                        $st_ses_id = (int) $_SESSION['st_id'];
+                        
+                        if( 0 == mysqli_num_rows( $get_all_projects_query ) ) {
+                            echo "<div class='alert alert-warning'>No data found.</div>";
+                        }
+                        $count = 0;
+                        while( $get_all_projects_results = mysqli_fetch_array( $get_all_projects_query ) ) {
+                            $count++;
+                            $fname = $get_all_projects_results['name'];
+                            $gnumber = $get_all_projects_results['gnumber'];
+                            $gemail = $get_all_projects_results['gemail'];
+                            $st_id = $get_all_projects_results['st_id'];
+                            $email = $get_all_projects_results['email'];
+                            $is_approved = $get_all_projects_results['is_approved'];
+                            $project_file = $get_all_projects_results['project_file'];
+                            $project_file = unserialize( $project_file );
+                            $profile_pic = $get_all_projects_results['profile_pic'];
+                            $p_username = $get_all_projects_results['username'];
+                            $roll = $get_all_projects_results['id'];
+                            $department = $get_all_projects_results['program'];
+                            $batch = $get_all_projects_results['session'];
+                            $approved_by = $get_all_projects_results['approved_by'];
+                            $supervisor = $get_all_projects_results['supervisor'];
+                            $project_title = $get_all_projects_results['project_title'];
+                            $project_description = $get_all_projects_results['project_description'];
+                            $g_id = $get_all_projects_results['g_id'];
+                            $p_id = $get_all_projects_results['p_id'];
+                            $class_name = '';
+                            
+                            if( $is_approved == 0 ) {
+                                $status = "<span class='btn btn-gradient-danger btn-sm'>Not Approve</span>";
+                            } elseif( $is_approved == 1 ) {
+                                $status = "<span class='btn btn-gradient-success btn-sm'>Approve</span>";
+                            }
+                            ?>
+                        <div class="col-md-12">
+                            <div class="card border">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <?php echo $fname; ?>
+                                    </h5>
+                                    <h6 class="card-subtitle mb-2 text-muted"><?php echo $department; ?>, <?php echo $batch; ?>.</h6>
+                                    <hr>
+                                    <p><strong>Group Members: </strong></p>
+                                    <?php 
+                                    $get_members = mysqli_query( $mysqli, "SELECT group_members FROM sms_group WHERE g_id = '$g_id' ");
+                                    if( mysqli_num_rows( $get_members) > 0 ) {
+                                        $get_reesult = mysqli_fetch_array( $get_members );
+                                        $all_members = json_decode( $get_reesult['group_members'] );
+                                        echo "<ul class='list-inline'>";
+                                        foreach ( $all_members as $member ) {
+                                            $get_members_info = mysqli_query( $mysqli, "SELECT name, id FROM sms_registration WHERE st_id = '$member' ");
+                                            if( mysqli_num_rows( $get_members_info ) ) {
+                                                while ( $get_info_result = mysqli_fetch_array( $get_members_info ) ) {
+                                                    $member_name = $get_info_result['name'];
+                                                    $member_id = $get_info_result['id'];
+                                                    echo "<li class='list-inline-item'>" . $member_name . ' ( ' . $member_id . ' ),' . "</li>";
+                                                }
+                                            }
+                                        }
+                                        echo "</ul>";
                                     }
-                                    $count = 0;
-                                    while( $get_all_projects_results = mysqli_fetch_array( $get_all_projects_query ) ) {
-                                        $count++;
-                                        $fname = $get_all_projects_results['name'];
-                                        $st_id = $get_all_projects_results['st_id'];
-                                        $email = $get_all_projects_results['email'];
-                                        $is_approved = $get_all_projects_results['is_approved'];
-                                        $project_file = $get_all_projects_results['project_file'];
-                                        $project_file = unserialize( $project_file );
-                                        $profile_pic = $get_all_projects_results['profile_pic'];
-                                        $edited_count = $get_all_projects_results['edited_count'];
-                                        $p_username = $get_all_projects_results['username'];
-                                        $roll = $get_all_projects_results['id'];
-                                        $batch = $get_all_projects_results['program'];
-                                        $department = $get_all_projects_results['session'];
-                                        $approved_by = $get_all_projects_results['approved_by'];
-                                        $supervisor = $get_all_projects_results['supervisor'];
-                                        $class_name = '';
-                                      
-                                        if( $edited_count >= 3 ) {
-                                            $class_name = 'btn btn-gradient-danger btn-sm';
-                                        }
-                                        
-                                        if( $is_approved == 0 ) {
-                                            $status = "<span class='btn btn-gradient-danger btn-sm'>Not Approve</span>";
-                                        } elseif( $is_approved == 1 ) {
-                                            $status = "<span class='btn btn-gradient-success btn-sm'>Approve</span>";
-                                        }
-                                        ?>
-                                <tr>
-                                    <td><?php echo $count; ?></td>
-                                    <td>
-                                        <p>
-                                        <?php
-                                        if( empty( $profile_pic ) ) {
-                                            echo '<i class="mdi mdi-face-profile mdi-48px menu-icon"></i>';
-                                        } else {
-                                            echo "<img src='assets/images/profile/$profile_pic' alt='image' />";
-                                        }
-                                        ?>
-                                        </p>
-                                        <p><?php echo $fname; ?></p>
-                                        <?php if( !empty( $roll ) && !empty( $batch) && !empty( $department ) ) { echo $roll . ' <br/> '.$batch.' <br/> '.$department; } ?>
-                                        <a class="btn btn-gradient-info btn-sm" href="download.php?file=<?php echo urlencode( $project_file ); ?>">Download <i class="mdi mdi-eye menu-icon"></i></a>
-                                    </td>
-                                    <td>
-                                        <?php if( 0 == $is_approved ) : ?>
+                                    ?>
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <p><b>Proposed Title: <br/> </b><?php echo $project_title; ?></p>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <p><b>Group leader number: <br/> </b><?php echo $gnumber; ?></p>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <p><b>Group leader email: <br/> </b><?php echo $gemail; ?></p>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <p><b>Download: </b><br/> <?php echo '<p><a href="download.php?file=' . urlencode($project_file) . '">Download File</a></p>'; ?></p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <p><b>Proposed Details: </b> <br/> <?php echo $project_description; ?></p>
+                                        </div>
+                                    </div>
+
+                                    <?php if( 0 == $is_approved ) : ?>
                                         <a data-username="<?php echo $p_username;  ?>" href="#" class="btn btn-gradient-danger btn-sm approve_project" data-bs-toggle="modal" data-bs-target="#exampleModal">Approve Project</a>
-                                        <?php else : ?>
-                                        <span class="btn btn-gradient-success btn-sm" >Approved</span>
-                                        <?php endif; ?>
-                                        <?php if( $is_approved == 1 ) : ?>
-                                        <a class="btn btn-gradient-success btn-sm" href="set-goal.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Set Goal</a>
+                                    <?php else : ?>
+                                        <span class="btn btn-gradient-success btn-sm">Project Approved</span>
+                                    <?php endif; ?>
+
+                                    <?php if( $is_approved == 1 ) : ?>
+                                            <a class="btn btn-gradient-primary btn-sm" href="set-goal.php?p_id=<?php echo $p_id; ?>&username=<?php echo $p_username; ?>">Set Goal</a>
                                         <?php if( $approved_by == $username || $supervisor == $st_ses_id ) : ?>
-                                        <a class="btn btn-gradient-info btn-sm" href="edit-student-project.php?st_id=<?php echo $st_id; ?>&username=<?php echo $p_username; ?>">Edit</a>
+                                            <a class="btn btn-gradient-info btn-sm" href="edit-student-project.php?p_id=<?php echo $p_id; ?>&username=<?php echo $p_username; ?>">Edit</a>
                                         <?php endif; ?>
-                                        <?php else : ?>
-                                        <a class="btn btn-gradient-info btn-sm" href="#">N/A</a>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php } ?>
                     </div>
                 </div>
             </div>
@@ -123,7 +145,7 @@
                 Are you sure to approve this project?
                 <h4>
                 <?php
-                    $get_teacer = mysqli_query( $mysqli, "SELECT fname, lname, st_id FROM sms_registration WHERE st_type = 2 AND st_id != '$st_ses_id' ");
+                    $get_teacer = mysqli_query( $mysqli, "SELECT name, id, st_id FROM sms_registration WHERE st_type = 2 AND st_id != '$st_ses_id' ");
                     
                     ?>
                 <form class="pt-3" id="form" method="POST" action="">
@@ -132,10 +154,10 @@
                             <option value="">--Select Superviosr</option>
                             <?php
                                 while( $result_teacher = mysqli_fetch_array( $get_teacer, MYSQLI_ASSOC ) ) {
-                                    $fname = $result_teacher['fname'];
-                                    $lname = $result_teacher['lname'];
+                                    $name = $result_teacher['name'];
+                                    $id = $result_teacher['id'];
                                     $teacher_id = $result_teacher['st_id'];
-                                    echo "<option value='$teacher_id'>$fname $lname</option>";
+                                    echo "<option value='$teacher_id'>$name ($id)</option>";
                                 }
                                 ?>
                         </select>

@@ -86,8 +86,8 @@ if( isset( $_SESSION['st_id'] ) && !empty( $_SESSION['st_id'] ) ) {
       <div class="collapse" id="ui-basic">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item"> <a class="nav-link" href="submit-project.php">Submit Project</a></li>
-          <li class="nav-item"> <a class="nav-link" href="my-project.php">Your Project</a></li>
-          <li class="nav-item"> <a class="nav-link" href="my-project-goal.php">Your Project Goal</a></li>
+          <li class="nav-item"> <a class="nav-link" href="my-project.php">My Project</a></li>
+          <li class="nav-item"> <a class="nav-link" href="my-project-goal.php">My Project Goal</a></li>
         </ul>
       </div>
     </li>

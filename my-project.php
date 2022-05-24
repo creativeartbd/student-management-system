@@ -37,6 +37,7 @@ check_user_login_status();
                           $is_approved = $result['is_approved'];
                           $gnumber = $result['gnumber'];
                           $gemail = $result['gemail'];
+                          $ex_g_id = $result['g_id'];
                           $time_left =  3 - $edited_count;
                           if( $time_left == 1 ) {
                             $time_level = ' time';
@@ -74,30 +75,19 @@ check_user_login_status();
                             <label><b>Choose group member</b></label>
                             <?php 
                             $st_id = (int) $_SESSION['st_id'];
-                            $get_all_student = mysqli_query( $mysqli, "SELECT name, id, st_id FROM sms_registration WHERE st_type = 1 AND st_id != '$st_id' " );
-                            
-                            $get_group_members = mysqli_query( $mysqli, "SELECT * FROM sms_group WHERE st_id = '$st_id' ");
-                            $group_members = [];
-                            $g_id = '';
-                            if( mysqli_num_rows( $get_group_members ) > 0 ) {
-                                $result_group_members = mysqli_fetch_array( $get_group_members );
-                                $group_members = unserialize( $result_group_members['group_members'] );
-                                $g_id = (int) $result_group_members['g_id'];
-                            }
-                            
-                            while( $get_all_student_result = mysqli_fetch_array( $get_all_student, MYSQLI_ASSOC ) ) {
-                                
-                                $name = $get_all_student_result['name'];
-                                $id = $get_all_student_result['id'];
-                                $st_id = $get_all_student_result['st_id'];
+                            $get_groups = mysqli_query( $mysqli, "SELECT g_name, g_id FROM sms_group WHERE st_id != '$st_id' " );
+
+                            while( $group_result = mysqli_fetch_array( $get_groups, MYSQLI_ASSOC ) ) {
+                                $g_name = $group_result['g_name'];
+                                $g_id = $group_result['g_id'];
                                 $checked = '';
-                                if( in_array( $st_id, $group_members ) ) {
+                                if( $ex_g_id == $g_id ) {
                                     $checked = 'checked';
                                 }
                                 echo '<div class="form-check form-check-success">';
-                                echo '<label class="form-check-label">';
-                                    echo "<input type='checkbox' $checked class='form-check-input' name='group_members[]' value='$st_id'> ".ucfirst( $name ) . ' (' . ucfirst( $id ) . ')';
-                                echo '<i class="input-helper"></i></label>';
+                                    echo '<label class="form-check-label">';
+                                    echo "<input type='radio' $checked class='form-check-input' name='group_name' value='$g_id'> ".ucfirst( $g_name );
+                                    echo '<i class="input-helper"></i></label>';
                                 echo '</div>';
                             }
                             ?>
@@ -106,7 +96,6 @@ check_user_login_status();
                             <div class="result"></div>
                         </div>
                         <div class="mt-3">
-                            <input type="hidden" name="g_id" value=<?php echo $g_id; ?>>
                             <input type="hidden" name="form" value="updateproject">
                             <input type="submit" value="Update Project" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn ajax-btn">
                         </div>

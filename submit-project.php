@@ -39,19 +39,18 @@ check_user_login_status();
                                         <input type="file" class="form-control form-control-lg" name="pfile">
                                     </div>
                                     <div class="form-group group-member">
-                                        <label><b>Choose group member</b></label>
+                                        <label><b>Choose a group</b></label>
                                         <?php 
                                         $st_id = (int) $_SESSION['st_id'];
-                                        $get_all_student = mysqli_query( $mysqli, "SELECT name, st_id, id FROM sms_registration WHERE st_type = 1 AND st_id != '$st_id' " );
+                                        $get_groups = mysqli_query( $mysqli, "SELECT g_name, g_id FROM sms_group WHERE st_id != '$st_id' " );
 
-                                        while( $get_all_student_result = mysqli_fetch_array( $get_all_student, MYSQLI_ASSOC ) ) {
-                                            $name = $get_all_student_result['name'];
-                                            $id = $get_all_student_result['id'];
-                                            $st_id = $get_all_student_result['st_id'];
+                                        while( $group_result = mysqli_fetch_array( $get_groups, MYSQLI_ASSOC ) ) {
+                                            $g_name = $group_result['g_name'];
+                                            $g_id = $group_result['g_id'];
 
                                             echo '<div class="form-check form-check-success">';
                                                 echo '<label class="form-check-label">';
-                                                echo "<input type='checkbox' class='form-check-input' name='group_members[]' value='$st_id'> ".ucfirst( $name ) . ' (' . $id . ')';
+                                                echo "<input type='radio' class='form-check-input' name='group_name' value='$g_id'> ".ucfirst( $g_name );
                                                 echo '<i class="input-helper"></i></label>';
                                             echo '</div>';
                                         }
