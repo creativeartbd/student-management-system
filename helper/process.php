@@ -289,6 +289,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
     $output['message'] = [];
     $output['success'] = false;
     $output['reload'] = true;
+    $date = date("Y-m-d h:i:s");
 
     if( isset( $goal_reply ) && isset( $file_name ) ) {
         if( empty( $goal_reply ) && empty( $file_name ) ) {
@@ -326,6 +327,7 @@ if( isset( $_POST['form']) && $_POST['form'] == 'goalreply' ) {
                         'goal_file' => serialize( $new_file_name ), 
                         'st_id' => $st_id, 
                         'goal_id' => $goal_id,
+                        'goal_received' => $date,
                     ], 'sms_goal_answer' ) ) {
                         $output['success'] = true;
                         $output['message'] = "Successfully submited your goal.";

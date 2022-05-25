@@ -142,6 +142,8 @@ function student_notification( $student_id = null ) {
             echo "</tr>";
         }
         echo "</table>";
+    } else {
+        echo "<div class='alert alert-secondary'>You don't have any notification yet.</div>";
     }
 }
 
@@ -150,14 +152,91 @@ function student_project_progress() {
     $ses_st_id = (int) $_SESSION['st_id'];
     $get_goal = mysqli_query( $mysqli, "SELECT goal_id FROM sms_goal WHERE goal_to = '$ses_st_id' ");
     $total_goal = mysqli_num_rows( $get_goal );
+    if( $total_goal > 0 ) {
+        $answer_goal = mysqli_query( $mysqli, "SELECT goal_id FROM sms_goal WHERE goal_to = '$ses_st_id' AND is_answer = 1 ");
+        $answered_goal = mysqli_num_rows( $answer_goal );
 
-    $answer_goal = mysqli_query( $mysqli, "SELECT goal_id FROM sms_goal WHERE goal_to = '$ses_st_id' AND is_answer = 1 ");
-    $answered_goal = mysqli_num_rows( $answer_goal );
+        $progress = round( $answered_goal / $total_goal * 100 );
+        ?>
+        <div class="progress" style="height: 15px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: <?php echo $progress ?>%" aria-valuenow="<?php echo $progress ?>" aria-valuemin="0" aria-valuemax="100"><?php echo $progress ?>%</div>
+        </div>
+        <?php
+    } else {
+        echo "<div class='alert alert-warning'>You didn't submit any project yet.</div>";
+    }
+    
+}
 
-    $progress = round( $answered_goal / $total_goal * 100 );
-    ?>
-    <div class="progress" style="height: 15px;">
-        <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: <?php echo $progress ?>%" aria-valuenow="<?php echo $progress ?>" aria-valuemin="0" aria-valuemax="100"><?php echo $progress ?>%</div>
-    </div>
-    <?php
+function teacher_notification( $teacher_id = null, $type = null ) {
+    
+    global $mysqli;
+    if( empty( $teacher_id ) || empty( $type ) ) return;
+
+    if( 'goal' == $type ) {
+        $query = mysqli_query( $mysqli, "SELECT sg.goal_title, sg.goal_id, sg.goal_received, sr.name, sr.id FROM sms_goal AS sg LEFT JOIN sms_registration AS sr ON sg.goal_to = sr.st_id ORDER BY sg.goal_id DESC ");
+    }  elseif( 'project' == $type ) {
+        $query = mysqli_query( $mysqli, "SELECT sp.project_title, sp.p_id, sp.uploaded_time, sp.is_approved, sr.name, sr.id FROM sms_projects AS sp LEFT JOIN sms_registration AS sr ON sp.st_id = sr.st_id ORDER BY sp.p_id DESC ");
+    }
+
+    echo "<table class='table table-bordered text-white'>";
+
+        if( 'goal' == $type ) {
+
+            echo "<tr>";
+                echo "<th>Title</th>";
+                echo "<th>Student</th>";
+                echo "<th>Submit Date</th>";
+            echo "</tr>";
+
+        } elseif ( 'project' ==  $type ) {
+
+            echo "<tr>";
+                echo "<th>Proposed Title</th>";
+                echo "<th>Student</th>";
+                echo "<th>Submit Date</th>";
+                echo "<th>Status</th>";
+            echo "</tr>";
+        } 
+        
+        while( $get_result = mysqli_fetch_array( $query, MYSQLI_ASSOC ) ) {
+            
+            if( 'goal' == $type ) {
+
+                $goal_title = $get_result['goal_title'];
+                $goal_id = $get_result['goal_id'];
+                $name = $get_result['name'];
+                $goal_received = $get_result['goal_received'];
+                $id = $get_result['id'];
+
+                echo "<tr>";
+                    echo "<td>$goal_title</td>";
+                    echo "<td>$name ($id)</td>";
+                    echo "<td>$goal_received</td>";
+                echo "</tr>";
+
+            } elseif( 'project' == $type ) {
+
+                $project_title = $get_result['project_title'];
+                $p_id = $get_result['p_id'];
+                $uploaded_time = $get_result['uploaded_time'];
+                $name = $get_result['name'];
+                $id = $get_result['id'];
+                $is_approved = $get_result['is_approved'];
+
+                if( $is_approved ) {
+                    $status = '<span class="btn btn-gradient-success btn-sm">Approved.</span>';
+                } else {
+                    $status = '<span class="btn btn-gradient-danger btn-sm">Waiting for approval.</span>';
+                }
+
+                echo "<tr>";
+                    echo "<td>$project_title</td>";
+                    echo "<td>$name ($id)</td>";
+                    echo "<td>$uploaded_time</span></td>";
+                    echo "<td><span>$status</span></td>";
+                echo "</tr>";
+            }
+        }
+    echo "</table>";
 }

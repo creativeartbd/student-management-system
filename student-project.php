@@ -61,7 +61,7 @@
                                 $status = "<span class='btn btn-gradient-success btn-sm'>Approve</span>";
                             }
                             ?>
-                        <div class="col-md-12">
+                        <div class="col-md-12 mb-3">
                             <div class="card border">
                                 <div class="card-body">
                                     <h5 class="card-title">

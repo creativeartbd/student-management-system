@@ -1,6 +1,7 @@
 <?php 
 require_once 'partials/header.php';
 check_user_login_status();
+$st_id = (int) $_SESSION['st_id'];
 ?>
 <div class="container-scroller">
 <?php require_once 'partials/top-header.php'?>
@@ -20,8 +21,7 @@ check_user_login_status();
         <div class="col-md-6 stretch-card grid-margin">
             <div class="card bg-gradient-default card-img-holder p-3">
                 <div class="card-body">
-                    <?php 
-                    $st_id = (int) $_SESSION['st_id'];
+                    <?php
                     $get_members = mysqli_query( $mysqli, "SELECT name, st_id, id FROM sms_registration WHERE st_id != '$st_id' and st_type = 1 ");
                     $found_members = mysqli_num_rows( $get_members );
                     ?>
@@ -105,6 +105,27 @@ check_user_login_status();
                     <h4 class="font-weight-normal mb-3">Progress<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
                     <h3 class="mb-5">Project Progress</h3>
                     <?php student_project_progress(); ?>
+                </div>
+            </div>
+        </div>
+        <?php else : ?>
+        <div class="col-md-12 stretch-card grid-margin">
+            <div class="card bg-gradient-info card-img-holder text-white">
+                <div class="card-body">
+                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image">
+                    <h4 class="font-weight-normal mb-3">Project Notification<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
+                    <h3 class="mb-5">Student Project</h3>
+                    <?php teacher_notification( $st_id, 'project' ); ?>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 stretch-card grid-margin">
+            <div class="card bg-gradient-primary card-img-holder text-white">
+                <div class="card-body">
+                    <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image">
+                    <h4 class="font-weight-normal mb-3">Goal Notification<i class="mdi mdi-bookmark-outline mdi-24px float-right"></i></h4>
+                    <h3 class="mb-5">Student Goal</h3>
+                    <?php teacher_notification( $st_id, 'goal' ); ?>
                 </div>
             </div>
         </div>
